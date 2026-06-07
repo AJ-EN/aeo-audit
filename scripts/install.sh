@@ -8,7 +8,7 @@ for arg in "$@"; do
   fi
 done
 
-REPO="ayushjangid/aeo-audit"
+REPO="AJ-EN/aeo-audit"
 BINARY="aeo-audit"
 INSTALL_DIR="${HOME}/.local/bin"
 
