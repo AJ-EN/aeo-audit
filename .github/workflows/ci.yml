@@ -65,11 +65,32 @@ jobs:
     needs: [test, build-binary]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Hatch
+        run: pip install hatch
+      - name: Build PyPI Package
+        run: hatch build
       - name: Download artifacts
         uses: actions/download-artifact@v4
+        with:
+          path: dist-binaries/
+      - name: Upload binaries to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp dist-binaries/aeo-audit-Linux/aeo-audit dist-binaries/aeo-audit-linux-x64
+          cp dist-binaries/aeo-audit-macOS/aeo-audit dist-binaries/aeo-audit-macos-arm64
+          gh release upload v1.0.0 dist-binaries/aeo-audit-linux-x64 dist-binaries/aeo-audit-macos-arm64 --clobber
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+        continue-on-error: true
