@@ -81,6 +81,12 @@ Issues = "https://github.com/ayushjangid/aeo-audit/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["aeo_audit"]
 
+[tool.hatch.envs.default]
+features = [
+    "dev",
+    "pdf",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
