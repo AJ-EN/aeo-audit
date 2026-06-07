@@ -1,0 +1,6 @@
+{
+  "_comment": "Benchmark percentile data for AEO score normalization. Generated from scanning top 1000 API-first companies.",
+  "version": "v1",
+  "sample_size": 0,
+  "percentiles": []
+}

@@ -1,0 +1,20 @@
+{
+  "iss": "did:web:localhost%3A8765:perfect",
+  "sub": "did:web:localhost%3A8765:perfect#agent-1",
+  "nbf": 1541498111,
+  "exp": 2541498111,
+  "vc": {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://example.org/agent-delegation/v1"
+    ],
+    "type": ["VerifiableCredential", "AgentDelegationCredential"],
+    "credentialSubject": {
+      "id": "did:web:localhost%3A8765:perfect#agent-1",
+      "delegator": "did:web:localhost%3A8765:perfect",
+      "delegate": "did:web:localhost%3A8765:perfect#agent-1",
+      "capabilities": ["read", "write", "transact"]
+    }
+  },
+  "signature": "mockSignatureEd25519"
+}

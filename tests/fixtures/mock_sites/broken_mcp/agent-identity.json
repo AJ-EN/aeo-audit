@@ -1,0 +1,6 @@
+{
+  "principal": "did:web:localhost%3A8765:broken_mcp",
+  "agent": "did:web:localhost%3A8765:broken_mcp#agent-1",
+  "permissions": ["crawl", "mcp", "execute"],
+  "expiry": "2027-12-31T23:59:59Z"
+}

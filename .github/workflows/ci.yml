@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpango-1.0-0 libcairo2 libgdk-pixbuf-2.0-0 libffi-dev
+          npx playwright install-deps chromium
+      - name: Install deps
+        run: pip install hatch && hatch env create
+      - name: Run tests
+        run: hatch run pytest -x -v --cov=aeo_audit --cov-fail-under=80
+      - name: Type check
+        run: hatch run mypy --strict aeo_audit/
+      - name: Lint
+        run: hatch run ruff check aeo_audit/
+
+  build-binary:
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install system deps
+        run: |
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y libpango-1.0-0 libcairo2 libgdk-pixbuf-2.0-0 upx
+          else
+            brew install pango cairo gdk-pixbuf upx
+          fi
+          npx playwright install-deps chromium
+      - name: Build binary
+        run: |
+          pip install pyinstaller
+          pyinstaller --clean aeo_audit.spec
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: aeo-audit-${{ runner.os }}
+          path: dist/aeo-audit
+
+  release:
+    needs: [test, build-binary]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

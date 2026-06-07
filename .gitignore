@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtualenv
+.env
+.env.*
+.venv/
+venv/
+ENV/
+
+# Build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# SQLite
+*.sqlite
+*.sqlite3
+*.db
+
+# Playwright
+playwright-report/
+test-results/
+
+# Local configs
+config.local.yaml
+.env.local
+
+# Cache
+.cache/
+
+

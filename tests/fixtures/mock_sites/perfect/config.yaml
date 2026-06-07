@@ -1,0 +1,109 @@
+# Perfect Site Configuration
+
+endpoints:
+  /.well-known/agent-manifest.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: agent-manifest.json
+
+  /.well-known/mcp.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: mcp.json
+
+  /.well-known/did.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: did.json
+
+  /.well-known/agent-delegation.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: agent-delegation.json
+
+  /.well-known/oauth-authorization-server:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: oauth-authorization-server.json
+
+  /.well-known/agent-identity.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: agent-identity.json
+
+  /openapi.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: openapi.json
+
+  /.well-known/agent-pricing.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: agent-pricing.json
+
+  /usage:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body: |
+      {
+        "usage": {
+          "requests": 1500,
+          "tokens": 450000
+        },
+        "limits": {
+          "requests_limit": 5000,
+          "tokens_limit": 1000000
+        },
+        "overage_pricing": {
+          "requests_per_1k": 0.10,
+          "tokens_per_1m": 2.00
+        }
+      }
+
+  /status:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body: |
+      {
+        "status": "operational",
+        "incidents": []
+      }
+
+  /schemas/order.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body: |
+      {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "Order",
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "quantity": {"type": "integer"}
+        }
+      }
+
+  /api/error-rfc7807:
+    status: 400
+    headers:
+      Content-Type: application/problem+json
+    body: |
+      {
+        "type": "https://example.com/probs/out-of-credit",
+        "title": "You do not have enough credit.",
+        "detail": "Your current balance is 30, but that costs 50.",
+        "instance": "/api/error-rfc7807",
+        "code": "OUT_OF_CREDIT",
+        "retry_after": 3600
+      }

@@ -1,0 +1,62 @@
+endpoints:
+  /.well-known/agent-manifest.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body: "{\n  \"name\": \"BrokenMCPAgent\",\n  \"version\": \"1.0.0\",\n  \"capabilities\"\
+      : {\n    \"mcp_endpoint\": \"http://localhost:8765/broken_mcp/mcp\",\n    \"\
+      openapi_spec\": \"http://localhost:8765/broken_mcp/openapi.json\"\n  },\n  \"\
+      auth\": {\"type\": \"none\"},\n  \"pricing_url\": \"http://localhost:8765/broken_mcp/.well-known/agent-pricing.json\"\
+      \n}\n"
+  /mcp:
+    status: 500
+    headers:
+      Content-Type: application/json
+    body: '{"error": "MCP service crashed"}
+
+      '
+  /openapi.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: openapi.json
+  /.well-known/did.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: did.json
+  /.well-known/agent-delegation.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: agent-delegation.json
+  /.well-known/oauth-authorization-server:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: oauth-authorization-server.json
+  /.well-known/agent-identity.json:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body_file: agent-identity.json
+
+  /usage:
+    status: 200
+    headers:
+      Content-Type: application/json
+    body: |
+      {
+        "usage": {
+          "requests": 1500,
+          "tokens": 450000
+        },
+        "limits": {
+          "requests_limit": 5000,
+          "tokens_limit": 1000000
+        },
+        "overage_pricing": {
+          "requests_per_1k": 0.10,
+          "tokens_per_1m": 2.00
+        }
+      }

@@ -1,0 +1,9 @@
+{
+  "issuer": "http://localhost:8765/broken_mcp",
+  "authorization_endpoint": "http://localhost:8765/broken_mcp/oauth/authorize",
+  "token_endpoint": "http://localhost:8765/broken_mcp/oauth/token",
+  "introspection_endpoint": "http://localhost:8765/broken_mcp/oauth/introspect",
+  "jwks_uri": "http://localhost:8765/broken_mcp/oauth/jwks",
+  "response_types_supported": ["code", "token"],
+  "grant_types_supported": ["authorization_code", "client_credentials"]
+}

@@ -1,0 +1,30 @@
+# Missing Manifest Site Configuration
+
+endpoints:
+  /.well-known/agent-manifest.json:
+    status: 404
+    headers:
+      Content-Type: application/json
+    body: |
+      {"error": "Not Found"}
+
+  /.well-known/mcp.json:
+    status: 404
+    headers:
+      Content-Type: application/json
+    body: |
+      {"error": "Not Found"}
+
+  /mcp:
+    status: 404
+    headers:
+      Content-Type: application/json
+    body: |
+      {"error": "Not Found"}
+
+  /sitemap.xml:
+    status: 404
+    headers:
+      Content-Type: text/plain
+    body: |
+      Not Found

@@ -1,0 +1,14 @@
+{
+  "name": "PerfectAEOAgent",
+  "version": "1.0.0",
+  "capabilities": {
+    "mcp_endpoint": "http://localhost:8765/perfect/mcp",
+    "openapi_spec": "http://localhost:8765/perfect/openapi.json",
+    "graphql_endpoint": "http://localhost:8765/perfect/graphql"
+  },
+  "auth": {
+    "type": "oauth2",
+    "authorization_server": "http://localhost:8765/perfect/.well-known/oauth-authorization-server"
+  },
+  "pricing_url": "http://localhost:8765/perfect/.well-known/agent-pricing.json"
+}

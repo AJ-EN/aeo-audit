@@ -1,0 +1,19 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/suites/jws-2020/v1"
+  ],
+  "id": "did:web:localhost%3A8765:broken_mcp",
+  "verificationMethod": [
+    {
+      "id": "did:web:localhost%3A8765:broken_mcp#key-1",
+      "type": "JsonWebKey2020",
+      "controller": "did:web:localhost%3A8765:broken_mcp",
+      "publicKeyJwk": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "O2a13kl131498asdjkfhkausdfbklasjdh"
+      }
+    }
+  ]
+}

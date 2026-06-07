@@ -1,0 +1,16 @@
+# Minimal Site Configuration
+
+endpoints:
+  /.well-known/agent-manifest.json:
+    status: 404
+    headers:
+      Content-Type: application/json
+    body: |
+      {"error": "Not Found"}
+
+  /mcp:
+    status: 404
+    headers:
+      Content-Type: application/json
+    body: |
+      {"error": "Not Found"}

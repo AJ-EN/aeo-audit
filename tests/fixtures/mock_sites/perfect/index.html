@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfect AEO Site</title>
+    <!-- Discovery: Link headers/meta tags for MCP and DID -->
+    <link rel="mcp" href="/perfect/mcp">
+    <link rel="did" href="did:web:localhost:8765:perfect">
+    <link rel="describedby" href="/perfect/schemas/order.json">
+    
+    <!-- Identity: Wallet Hints -->
+    <meta name="ethereum-address" content="0x1234567890123456789012345678901234567890">
+    <meta name="solana-address" content="SolanaAddress111111111111111111111111111">
+    <meta name="payment-pointer" content="$ilp.uphold.com/perfect-pointer">
+</head>
+<body>
+    <h1>Perfect AEO Site</h1>
+    <p>Welcome to the perfect AEO site. This site satisfies all discovery, identity, capabilities, commerce, and trust checks.</p>
+
+    <!-- Commerce: Stripe Checkout Hints, Trial, and Crypto Hints -->
+    <div id="pricing">
+        <h2>Pricing &amp; Checkout</h2>
+        <p>Start a 14-day free trial (no credit card required). Free tier includes 100 free requests.</p>
+        <p>Upgrade to Pro using stripe.checkout.session.create with price_id: "price_123".</p>
+        <p>Crypto payments accepted at ethereum-address 0x1234567890123456789012345678901234567890 or USDC Address.</p>
+        <span class="free-tier-signal" data-free-tier="true" data-trial-days="14" data-credit-grant="10.0"></span>
+    </div>
+
+    <!-- Capabilities: Webhooks info -->
+    <div id="developer-docs">
+        <h2>Developer API</h2>
+        <p>API docs: <a href="/perfect/openapi.json">OpenAPI Spec</a></p>
+        <p>GraphQL endpoint: <a href="/perfect/graphql">GraphQL Playground</a></p>
+        <p>We support asynchronous webhooks. Register your endpoint at `/webhooks`. Supported event types: `order.created`, `payment.succeeded`. All webhooks include a signature verification header `X-Webhook-Signature`. If your webhook fails, we retry up to 5 times with exponential backoff.</p>
+    </div>
+
+    <!-- Trust: Status page and health -->
+    <div id="status">
+        <h2>System Status</h2>
+        <p>Read our machine-readable status updates at <a href="/perfect/status">/status</a>.</p>
+    </div>
+</body>
+</html>

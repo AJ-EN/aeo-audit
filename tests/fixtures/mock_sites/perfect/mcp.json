@@ -1,0 +1,16 @@
+{
+  "mcp_endpoint": "http://localhost:8765/perfect/mcp",
+  "tools": [
+    {
+      "name": "search_products",
+      "description": "Search for products by query",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string"}
+        },
+        "required": ["query"]
+      }
+    }
+  ]
+}

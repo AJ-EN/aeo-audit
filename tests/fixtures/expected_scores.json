@@ -1,0 +1,149 @@
+{
+  "perfect": {
+    "overall": 100.0,
+    "categories": {
+      "discovery": 100.0,
+      "identity": 100.0,
+      "capabilities": 100.0,
+      "commerce": 100.0,
+      "trust": 100.0
+    },
+    "checks": {
+      "agent_manifest": 1.0,
+      "mcp_endpoint": 1.0,
+      "robots_agent": 1.0,
+      "sitemap_xml": 1.0,
+      "well_known_crawl": 1.0,
+      "dns_txt_records": 1.0,
+      "did_document": 1.0,
+      "delegation_proof": 1.0,
+      "oauth_metadata": 1.0,
+      "wallet_hints": 1.0,
+      "agent_identity_json": 1.0,
+      "openapi_spec": 1.0,
+      "mcp_tools_list": 1.0,
+      "json_schema_endpoints": 1.0,
+      "graphql_introspection": 1.0,
+      "async_webhooks": 1.0,
+      "agent_pricing_json": 1.0,
+      "stripe_checkout_hints": 1.0,
+      "crypto_payment_hints": 1.0,
+      "usage_metering_api": 1.0,
+      "trial_freemium_signals": 1.0,
+      "audit_log_endpoint": 1.0,
+      "receipt_verification": 1.0,
+      "health_check": 1.0,
+      "structured_errors": 1.0,
+      "sla_status_page": 1.0
+    }
+  },
+  "missing_manifest": {
+    "overall": 15.0,
+    "categories": {
+      "discovery": 0.0,
+      "identity": 0.0,
+      "capabilities": 0.0,
+      "commerce": 0.0,
+      "trust": 100.0
+    },
+    "checks": {
+      "agent_manifest": 0.0,
+      "mcp_endpoint": 0.0,
+      "robots_agent": 0.0,
+      "sitemap_xml": 0.0,
+      "well_known_crawl": 0.0,
+      "dns_txt_records": 0.0,
+      "agent_pricing_json": 0.0,
+      "stripe_checkout_hints": 0.0,
+      "crypto_payment_hints": 0.0,
+      "usage_metering_api": 0.0,
+      "trial_freemium_signals": 0.0
+    }
+  },
+  "broken_mcp": {
+    "overall": 88.75,
+    "categories": {
+      "discovery": 80.0,
+      "identity": 100.0,
+      "capabilities": 75.0,
+      "commerce": 100.0,
+      "trust": 100.0
+    },
+    "checks": {
+      "mcp_endpoint": 0.0,
+      "mcp_tools_list": 0.0
+    }
+  },
+  "no_pricing": {
+    "overall": 94.0,
+    "categories": {
+      "discovery": 100.0,
+      "identity": 100.0,
+      "capabilities": 100.0,
+      "commerce": 70.0,
+      "trust": 100.0
+    },
+    "checks": {
+      "agent_pricing_json": 0.0,
+      "stripe_checkout_hints": 1.0,
+      "crypto_payment_hints": 1.0,
+      "usage_metering_api": 1.0,
+      "trial_freemium_signals": 1.0
+    }
+  },
+  "no_trust": {
+    "overall": 85.0,
+    "categories": {
+      "discovery": 100.0,
+      "identity": 100.0,
+      "capabilities": 100.0,
+      "commerce": 100.0,
+      "trust": 0.0
+    },
+    "checks": {
+      "audit_log_endpoint": 0.0,
+      "receipt_verification": 0.0,
+      "health_check": 0.0,
+      "structured_errors": 0.0,
+      "sla_status_page": 0.0
+    }
+  },
+  "minimal": {
+    "overall": 0.0,
+    "categories": {
+      "discovery": 0.0,
+      "identity": 0.0,
+      "capabilities": 0.0,
+      "commerce": 0.0,
+      "trust": 0.0
+    },
+    "checks": {
+      "agent_manifest": 0.0,
+      "mcp_endpoint": 0.0,
+      "robots_agent": 0.0,
+      "sitemap_xml": 0.0,
+      "well_known_crawl": 0.0,
+      "dns_txt_records": 0.0,
+      "did_document": 0.0,
+      "delegation_proof": 0.0,
+      "oauth_metadata": 0.0,
+      "wallet_hints": 0.0,
+      "agent_identity_json": 0.0,
+      "openapi_spec": 0.0,
+      "mcp_tools_list": 0.0,
+      "json_schema_endpoints": 0.0,
+      "graphql_introspection": 0.0,
+      "async_webhooks": 0.0,
+      "agent_pricing_json": 0.0,
+      "stripe_checkout_hints": 0.0,
+      "crypto_payment_hints": 0.0,
+      "usage_metering_api": 0.0,
+      "trial_freemium_signals": 0.0,
+      "audit_log_endpoint": 0.0,
+      "receipt_verification": 0.0,
+      "health_check": 0.0,
+      "structured_errors": 0.0,
+      "sla_status_page": 0.0
+    }
+  }
+}

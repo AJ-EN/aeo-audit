@@ -1,0 +1,94 @@
+# AEO Audit Configuration
+# All weights, thresholds, and crawler settings are defined here.
+# Override via CLI flags: --weight discovery=0.30
+
+# --- Category Weights (must sum to 1.0) ---
+weights:
+  discovery: 0.25
+  identity: 0.15
+  capabilities: 0.25
+  commerce: 0.20
+  trust: 0.15
+
+# --- Per-Check Weights (within each category, must sum to 1.0) ---
+checks:
+  discovery:
+    agent_manifest: 0.25
+    mcp_endpoint: 0.20
+    robots_agent: 0.15
+    sitemap_xml: 0.10
+    well_known_crawl: 0.15
+    dns_txt_records: 0.15
+
+  identity:
+    did_document: 0.30
+    delegation_proof: 0.25
+    oauth_metadata: 0.20
+    wallet_hints: 0.15
+    agent_identity_json: 0.10
+
+  capabilities:
+    openapi_spec: 0.25
+    mcp_tools_list: 0.25
+    json_schema_endpoints: 0.20
+    graphql_introspection: 0.15
+    async_webhooks: 0.15
+
+  commerce:
+    agent_pricing_json: 0.30
+    stripe_checkout_hints: 0.20
+    crypto_payment_hints: 0.15
+    usage_metering_api: 0.20
+    trial_freemium_signals: 0.15
+
+  trust:
+    audit_log_endpoint: 0.25
+    receipt_verification: 0.20
+    health_check: 0.20
+    structured_errors: 0.20
+    sla_status_page: 0.15
+
+# --- Grading Thresholds ---
+thresholds:
+  grade_A: 90
+  grade_B: 75
+  grade_C: 60
+  grade_D: 40
+
+# --- Crawler Settings ---
+crawler:
+  user_agent: "AEOAuditor/1.0 (+https://github.com/ayushjangid/aeo-audit)"
+  timeout: 30
+  max_redirects: 5
+  cache_ttl: 3600
+  concurrent_checks: 10
+  respect_robots: true
+  wait_strategy: "networkidle"
+  custom_ready_signal: "__AEO_READY__"
+
+# --- HTTP Client ---
+http:
+  max_retries: 3
+  backoff_factor: 0.5
+  rate_limit_rpm: 60
+  pool_size: 20
+
+# --- Cache ---
+cache:
+  enabled: true
+  backend: "sqlite"
+  db_path: ".aeo_cache.db"
+  ttl: 3600
+
+# --- Benchmark Data ---
+benchmarks:
+  percentile_data: "benchmarks/percentiles_v1.json"
+  bootstrap_samples: 1000
+  confidence_level: 0.95
+
+# --- Reporting ---
+reporting:
+  html_template: "templates/report.html.j2"
+  include_evidence: true
+  include_screenshots: false
+  badge_threshold: 75

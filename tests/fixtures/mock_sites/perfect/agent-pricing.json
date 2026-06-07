@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "payment_methods": ["stripe", "crypto"],
+  "plans": [
+    {
+      "name": "Free Tier",
+      "price": 0.0,
+      "billing_interval": "monthly",
+      "features": ["3 tools access", "100 requests"]
+    },
+    {
+      "name": "Pro Tier",
+      "price": 49.0,
+      "billing_interval": "monthly",
+      "features": ["unlimited tools", "priority execution"]
+    }
+  ],
+  "metered_features": [
+    {
+      "name": "api_calls",
+      "unit_price": 0.01,
+      "unit_name": "request"
+    }
+  ]
+}
