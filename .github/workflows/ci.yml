@@ -22,6 +22,8 @@ jobs:
           npx playwright install-deps chromium
       - name: Install deps
         run: pip install hatch && hatch env create
+      - name: Install Playwright Browsers
+        run: hatch run playwright install chromium
       - name: Run tests
         run: hatch run pytest -x -v --cov=aeo_audit --cov-fail-under=80
       - name: Type check
