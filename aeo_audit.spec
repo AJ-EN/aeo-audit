@@ -12,7 +12,7 @@ def safe_collect(package_name):
 datas = [
     ('aeo_audit/templates', 'aeo_audit/templates'),
     ('aeo_audit/config.yaml', 'aeo_audit'),
-    ('benchmarks/percentiles_v1.json', 'benchmarks'),
+    ('aeo_audit/benchmarks/percentiles_v1.json', 'aeo_audit/benchmarks'),
 ]
 
 datas += safe_collect('mf2py')
