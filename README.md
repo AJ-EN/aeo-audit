@@ -1,5 +1,6 @@
 # AEO Auditor CLI
 
+[![PyPI version](https://img.shields.io/pypi/v/aeo-audit.svg)](https://pypi.org/project/aeo-audit/)
 [![Build Status](https://github.com/AJ-EN/aeo-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/AJ-EN/aeo-audit/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
@@ -51,14 +52,14 @@ PDF reports require external layout libraries installed on your OS:
 
 ### 2. Install Methods
 
-#### Method A: Via `pipx` (Recommended for Python CLI apps)
+#### Method A: Via `pip` / `pipx` (Recommended)
 
 ```bash
-# From GitHub (works today):
-pipx install git+https://github.com/AJ-EN/aeo-audit.git
+pipx install aeo-audit      # isolated CLI install (recommended)
+# or:  pip install aeo-audit
 
-# From PyPI (once published):
-# pipx install aeo-audit
+# bleeding edge from main:
+# pipx install git+https://github.com/AJ-EN/aeo-audit.git
 ```
 
 After installing, download the headless browser Playwright needs:
