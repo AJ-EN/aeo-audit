@@ -22,9 +22,9 @@ if TYPE_CHECKING:
 
 
 def calculate_grade(score: float, thresholds: dict[str, int]) -> Grade:
-    """Map a 0-100 score to a letter grade.
+    """Map a 0-100 score to a letter grade (absolute thresholds).
 
-    Grade: A>=90, B>=75, C>=60, D>=40, F<40
+    Used for per-category grades. Grade: A>=90, B>=75, C>=60, D>=40, F<40.
     """
     if score >= thresholds.get("grade_A", 90):
         return Grade.A
@@ -36,6 +36,52 @@ def calculate_grade(score: float, thresholds: dict[str, int]) -> Grade:
         return Grade.D
     else:
         return Grade.F
+
+
+# Default percentile cutoffs for relative grading (rank against the benchmark
+# corpus). A = top 10% of agent-readiness today, and the bar rises as the
+# benchmark corpus improves.
+DEFAULT_GRADE_PERCENTILES: dict[str, float] = {"A": 90.0, "B": 70.0, "C": 40.0, "D": 15.0}
+
+
+def grade_from_percentile(percentile: float, cutoffs: dict[str, float] | None = None) -> Grade:
+    """Map a 0-100 percentile rank to a letter grade.
+
+    Relative grading: a site's grade reflects how it ranks against the
+    benchmark corpus, not an absolute score. This keeps grades meaningful while
+    agent-readiness standards are still nascent (every absolute score is low).
+    """
+    c = cutoffs or DEFAULT_GRADE_PERCENTILES
+    if percentile >= c.get("A", 90.0):
+        return Grade.A
+    elif percentile >= c.get("B", 70.0):
+        return Grade.B
+    elif percentile >= c.get("C", 40.0):
+        return Grade.C
+    elif percentile >= c.get("D", 15.0):
+        return Grade.D
+    else:
+        return Grade.F
+
+
+def _resolve_benchmark_path(pct_file: str) -> str | None:
+    """Resolve a benchmark data path robustly across run contexts.
+
+    Tries the path as given (cwd-relative), then relative to the repository
+    root (package parent), so scoring works whether invoked from the repo, an
+    installed package, or the bundled binary.
+    """
+    from pathlib import Path
+
+    candidates = [
+        Path(pct_file),
+        Path(__file__).resolve().parent.parent.parent / pct_file,
+        Path(__file__).resolve().parent.parent / pct_file,
+    ]
+    for c in candidates:
+        if c.exists():
+            return str(c)
+    return None
 
 
 def _calculate_overall_score_raw(
@@ -214,6 +260,7 @@ def calculate_score(check_results: list[CheckResult], config: Config) -> Scoreca
         config.weights,
         config.checks,
     )
+    # Absolute grade is the fallback when no benchmark corpus is available.
     grade = calculate_grade(overall_score, config.thresholds)
 
     # 3. Bootstrap CI
@@ -227,17 +274,26 @@ def calculate_score(check_results: list[CheckResult], config: Config) -> Scoreca
         confidence_level=conf_level,
     )
 
-    # 4. Percentile normalization
+    # 4. Percentile normalization + relative grading
     benchmark_data = None
     pct_file = config.benchmarks.get("percentile_data")
     if pct_file:
-        try:
-            with open(pct_file, encoding="utf-8") as f:
-                bench_json = json.load(f)
-                benchmark_data = bench_json.get("percentiles")
-        except Exception:
-            pass
+        resolved = _resolve_benchmark_path(pct_file)
+        if resolved:
+            try:
+                with open(resolved, encoding="utf-8") as f:
+                    bench_json = json.load(f)
+                    benchmark_data = bench_json.get("percentiles")
+            except Exception:
+                pass
     percentile = normalize_to_percentile(overall_score, benchmark_data)
+
+    # When a benchmark corpus is available, grade relative to it (rank-based);
+    # otherwise fall back to the absolute grade computed above.
+    if percentile is not None:
+        grade = grade_from_percentile(
+            percentile, config.benchmarks.get("grade_percentiles")
+        )
 
     # Calculate counts
     total_checks = len(check_results)

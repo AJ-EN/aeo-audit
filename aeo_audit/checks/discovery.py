@@ -182,56 +182,137 @@ class RobotsAgentCheck(BaseCheck):
     description: ClassVar[str] = "Checks robots.txt for agent-friendly directives"
     timeout: ClassVar[float] = 10.0
 
+    # User-agent tokens that identify AI agents / LLM crawlers.
+    AGENT_UAS: ClassVar[frozenset[str]] = frozenset(
+        {"agent", "gptbot", "claudebot", "anthropic-ai", "oai-searchbot", "chatgpt-user", "perplexitybot"}
+    )
+
     async def run(self, context: CheckContext) -> CheckResult:
-        """Execute the check."""
-        robots_text = context.robots_txt or ""
-        lines = [
-            line.strip().lower()
-            for line in robots_text.splitlines()
-            if line.strip() and not line.strip().startswith("#")
-        ]
+        """Execute the check.
 
-        has_agent_block = False
-        allowed = False
-        current_agent_matches = False
+        Scores agent crawlability on a tiered scale rather than demanding an
+        explicit agent allow-list (which almost no site has yet):
 
-        for line in lines:
-            if line.startswith("user-agent:"):
-                ua = line.split(":", 1)[1].strip()
-                if ua in ("agent", "gptbot", "claudebot", "*"):
-                    current_agent_matches = True
-                    has_agent_block = True
-                else:
-                    current_agent_matches = False
-            elif line.startswith("allow:") and current_agent_matches:
-                path = line.split(":", 1)[1].strip()
-                if path == "/":
-                    allowed = True
-            elif line.startswith("disallow:") and current_agent_matches:
-                path = line.split(":", 1)[1].strip()
-                if path == "/":
-                    allowed = False
+        - 1.00 PASS  - robots.txt explicitly allows a named agent (Allow: /)
+        - 0.75 PASS  - allows all crawlers (``User-agent: *`` not blocking ``/``)
+        - 0.00 FAIL  - blocks agents (``Disallow: /`` for an agent or ``*``)
+        - 0.00 FAIL  - no robots.txt at all (no crawl guidance published)
+        """
+        robots_text = context.robots_txt
+        # Self-fetch fallback: the crawler does not populate robots_txt, so
+        # fetch it directly (mirrors SitemapXmlCheck) to work in production.
+        if not robots_text:
+            try:
+                async with httpx.AsyncClient(timeout=self.timeout) as client:
+                    resp = await client.get(f"{context.base_url}/robots.txt")
+                    if resp.status_code == 200:
+                        robots_text = resp.text
+            except Exception:
+                pass
+        robots_text = robots_text or ""
 
-        if has_agent_block and allowed:
-            return self._make_result(
-                status=CheckStatus.PASS,
-                score=1.0,
-                message="robots.txt explicitly allows agents",
-            )
-        else:
+        if not robots_text.strip():
             return self._make_result(
                 status=CheckStatus.FAIL,
                 score=0.0,
-                message="robots.txt does not explicitly allow agents",
+                message="No robots.txt found",
                 findings=[
                     self._make_finding(
-                        title="Robots.txt Agent Disallow",
-                        description="robots.txt is missing Allow directives for agent or GPTBot",
+                        title="Missing robots.txt",
+                        description="No robots.txt is published, so the site offers no crawl guidance to agents.",
                         severity=Severity.MEDIUM,
-                        recommendation="Add 'User-agent: agent\\nAllow: /' to robots.txt",
+                        recommendation="Publish a robots.txt that allows agents, e.g. 'User-agent: GPTBot\\nAllow: /'.",
                     )
                 ],
             )
+
+        agent_named_allow = False
+        agent_named_block = False
+        star_present = False
+        star_block_root = False
+        saw_user_agent = False
+        current_uas: list[str] = []
+
+        for raw in robots_text.splitlines():
+            line = raw.strip().lower()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("user-agent:"):
+                ua = line.split(":", 1)[1].strip()
+                # robots.txt groups consecutive user-agent lines together.
+                current_uas.append(ua)
+                saw_user_agent = True
+                if ua == "*":
+                    star_present = True
+            else:
+                if line.startswith("allow:"):
+                    path = line.split(":", 1)[1].strip()
+                    if path == "/" and any(ua in self.AGENT_UAS for ua in current_uas):
+                        agent_named_allow = True
+                elif line.startswith("disallow:"):
+                    path = line.split(":", 1)[1].strip()
+                    if path == "/":
+                        if any(ua in self.AGENT_UAS for ua in current_uas):
+                            agent_named_block = True
+                        if "*" in current_uas:
+                            star_block_root = True
+                current_uas = []
+
+        if not saw_user_agent:
+            # No valid robots directives (e.g. an error page or HTML body).
+            return self._make_result(
+                status=CheckStatus.FAIL,
+                score=0.0,
+                message="No valid robots.txt found",
+                findings=[
+                    self._make_finding(
+                        title="Missing robots.txt",
+                        description="No valid robots.txt is published, so the site offers no crawl guidance to agents.",
+                        severity=Severity.MEDIUM,
+                        recommendation="Publish a robots.txt that allows agents, e.g. 'User-agent: GPTBot\\nAllow: /'.",
+                    )
+                ],
+            )
+
+        if agent_named_block or (star_block_root and not agent_named_allow):
+            return self._make_result(
+                status=CheckStatus.FAIL,
+                score=0.0,
+                message="robots.txt blocks agents from crawling the site",
+                findings=[
+                    self._make_finding(
+                        title="Robots.txt Blocks Agents",
+                        description="robots.txt disallows '/' for agents or all crawlers.",
+                        severity=Severity.HIGH,
+                        recommendation="Allow agents to crawl: add 'User-agent: GPTBot\\nAllow: /'.",
+                    )
+                ],
+            )
+        if agent_named_allow:
+            return self._make_result(
+                status=CheckStatus.PASS,
+                score=1.0,
+                message="robots.txt explicitly allows AI agents",
+            )
+        if star_present:
+            return self._make_result(
+                status=CheckStatus.PASS,
+                score=0.75,
+                message="robots.txt allows all crawlers (agents permitted, but not explicitly welcomed)",
+                findings=[
+                    self._make_finding(
+                        title="No Explicit Agent Allow",
+                        description="Agents are permitted via 'User-agent: *' but not explicitly named.",
+                        severity=Severity.LOW,
+                        recommendation="Add explicit 'User-agent: GPTBot\\nAllow: /' directives to signal agent-readiness.",
+                    )
+                ],
+            )
+        return self._make_result(
+            status=CheckStatus.WARN,
+            score=0.5,
+            message="robots.txt does not address agents or all crawlers",
+        )
 
 
 class SitemapXmlCheck(BaseCheck):

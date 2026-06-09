@@ -68,6 +68,10 @@ jobs:
     permissions:
       id-token: write
       contents: write
+    env:
+      # Empty when no PyPI token is configured, so the publish step self-skips
+      # and the release still ships binaries instead of failing.
+      HAS_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
@@ -88,8 +92,9 @@ jobs:
         run: |
           cp dist-binaries/aeo-audit-Linux/aeo-audit dist-binaries/aeo-audit-linux-x64
           cp dist-binaries/aeo-audit-macOS/aeo-audit dist-binaries/aeo-audit-macos-arm64
-          gh release upload v1.0.0 dist-binaries/aeo-audit-linux-x64 dist-binaries/aeo-audit-macos-arm64 --clobber
+          gh release upload "${{ github.event.release.tag_name }}" dist-binaries/aeo-audit-linux-x64 dist-binaries/aeo-audit-macos-arm64 --clobber
       - name: Publish to PyPI
+        if: env.HAS_PYPI_TOKEN == 'true'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}

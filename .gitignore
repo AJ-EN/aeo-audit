@@ -51,4 +51,7 @@ config.local.yaml
 # Cache
 .cache/
 
-
+# Scan outputs — scraped page data may contain secrets/PII; keep out of VCS
+results.jsonl
+*.results.jsonl
+case-studies/
