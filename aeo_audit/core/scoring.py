@@ -309,6 +309,7 @@ def calculate_score(check_results: list[CheckResult], config: Config) -> Scoreca
         grade=grade,
         confidence_interval=ci,
         percentile=percentile,
+        benchmark_size=len(benchmark_data) if benchmark_data else 0,
         categories=categories,
         total_checks=total_checks,
         passed_checks=passed_checks,

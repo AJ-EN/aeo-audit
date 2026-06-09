@@ -130,6 +130,9 @@ class Scorecard(BaseModel):
     grade: Grade
     confidence_interval: ConfidenceInterval
     percentile: float | None = Field(default=None, ge=0.0, le=100.0)
+    benchmark_size: int = Field(
+        default=0, description="Number of sites in the benchmark corpus the percentile ranks against"
+    )
     categories: dict[Category, CategoryScore] = Field(default_factory=dict)
     total_checks: int = Field(default=0)
     passed_checks: int = Field(default=0)

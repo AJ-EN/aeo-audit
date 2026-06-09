@@ -4,6 +4,21 @@ All notable changes to `aeo-audit` are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-06-10
+
+### Changed
+- **Reports now lead with the absolute, verifiable result and never overstate
+  the relative grade.** The header shows `score/100` (coloured on an absolute
+  band) plus `passes X/Y checks`, and the percentile is labelled explicitly as
+  a rank "of N benchmarked sites" rather than implying an absolute claim. The
+  findings table is now a concrete "Top Gaps & How to Fix Them" fix-list.
+- HTML report mirrors this: a "grade is relative to N benchmarked sites" caption
+  and a "Checks Passed" metric.
+
+### Added
+- `Scorecard.benchmark_size` — the size of the corpus the percentile ranks
+  against, so reports can present the rank honestly.
+
 ## [1.1.2] - 2026-06-10
 
 ### Fixed
