@@ -1,6 +1,7 @@
 # AEO Audit CLI - Build Checklist
 
 ## Phase 1: Scaffold & Brain [x]
+
 - [x] Create full directory structure
 - [x] `pyproject.toml`: Hatch build, dependencies, entry points
 - [x] `config.yaml`: Weights, thresholds, crawler settings
@@ -12,6 +13,7 @@
 - [x] Show project tree
 
 ## Phase 2: Integration Tests & Mock Site Verification [x]
+
 - [x] Mock Server Setup
   - [x] Create `tests/fixtures/server.py` with dynamic, config-driven endpoint system
   - [x] Configure `tests/fixtures/mock_sites/perfect/` (static files + config.yaml)
@@ -28,6 +30,7 @@
   - [x] Write `tests/integration/test_crawler.py` (verify crawler integration)
 
 ## Phase 3: Production Hardening & Polish [x]
+
 - [x] Green Test Suite (Zero-Tolerance Policy)
   - [x] Correct all 26 checks to pass on perfect site and fail on target sites
   - [x] Validate scoring category math matches golden masters (+/- 0.5)
@@ -64,6 +67,7 @@
   - [x] Troubleshooting remediations (SSL, rate-limiting, edge-cases)
 
 ## Phase 4: Models [x]
+
 - [x] `core/models.py`: Pydantic v2 strict models
   - [x] Category, Severity, CheckStatus, Grade enums
   - [x] Finding, CheckResult, CategoryScore models
@@ -73,6 +77,7 @@
 - [x] `mypy --strict` passes on models
 
 ## Phase 5: Crawler [x]
+
 - [x] `core/crawler.py`: Playwright wrapper
   - [x] Browser context lifecycle (aenter/aexit)
   - [x] `fetch()`: Render JS, extract metadata
@@ -85,6 +90,7 @@
 - [x] Unit tests for crawler (mocked Playwright)
 
 ## Phase 6: Check Registry [x]
+
 - [x] `core/registry.py`: Plugin system
   - [x] Manual registration
   - [x] Built-in module discovery
@@ -92,7 +98,27 @@
 - [x] `checks/base.py`: AbstractBaseCheck
 - [x] Contract tests: all checks implement BaseCheck
 
+## Phase 7: Launch Readiness [~]
+
+- [x] Scoring overhaul (make the score a usable feedback loop)
+  - [x] Foundation-weighted category + check weights (Trust/Capabilities/Discovery lead)
+  - [x] Percentile-relative overall grading (`benchmarks.grade_percentiles`)
+  - [x] Robust benchmark path resolver (repo / installed / binary)
+  - [x] Seed benchmark corpus via `scripts/gen_benchmark.py`
+- [x] Correctness & reliability fixes
+  - [x] `robots_agent`: self-fetch fallback (was never fed `robots_txt` in prod) + tiered scoring
+  - [x] Crawl flakiness: `wait_strategy: load` (was `networkidle`), default timeout 30 -> 45
+- [x] Install-path fixes (launch blocker)
+  - [x] Repo-owner refs `ayushjangid` -> `AJ-EN` (README, pyproject, config UA, install.sh)
+  - [x] `pipx install git+https://...` documented (PyPI marked "once published")
+  - [x] Binary Chromium runtime documented (`PLAYWRIGHT_BROWSERS_PATH`)
+  - [x] Fixed broken `file:///` doc links -> relative paths
+- [ ] Publish to PyPI (trusted publishing via CI)
+- [ ] Host `perfect/` mock as a live 100/100 demo target
+- [ ] Launch assets: GitHub polish, demo GIF/video, then GitHub -> Twitter -> Show HN -> Product Hunt
+
 ## Quality Gates
+
 - [x] `mypy --strict aeo_audit/`: 0 errors (crawler, scoring, registry)
 - [x] `ruff check aeo_audit/`: 0 errors
 - [x] `ruff format --check aeo_audit/`: Clean

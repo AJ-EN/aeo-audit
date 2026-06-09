@@ -72,9 +72,9 @@ commerce = "aeo_audit.checks.commerce"
 trust = "aeo_audit.checks.trust"
 
 [project.urls]
-Homepage = "https://github.com/ayushjangid/aeo-audit"
-Repository = "https://github.com/ayushjangid/aeo-audit"
-Issues = "https://github.com/ayushjangid/aeo-audit/issues"
+Homepage = "https://github.com/AJ-EN/aeo-audit"
+Repository = "https://github.com/AJ-EN/aeo-audit"
+Issues = "https://github.com/AJ-EN/aeo-audit/issues"
 
 # --- Tool Configuration ---
 

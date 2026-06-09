@@ -1,6 +1,24 @@
 {
-  "_comment": "Benchmark percentile data for AEO score normalization. Generated from scanning top 1000 API-first companies.",
+  "_comment": "Benchmark percentile data for AEO score normalization. Seeded from a developer-tools corpus scored under the current weights.",
   "version": "v1",
-  "sample_size": 0,
-  "percentiles": []
+  "sample_size": 17,
+  "percentiles": [
+    0.0,
+    2.25,
+    3.12,
+    7.5,
+    7.5,
+    7.5,
+    7.62,
+    14.75,
+    15.0,
+    15.0,
+    15.0,
+    15.0,
+    17.25,
+    19.5,
+    22.62,
+    26.88,
+    27.88
+  ]
 }

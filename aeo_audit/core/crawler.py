@@ -36,9 +36,11 @@ class Crawler:
         cache_enabled: bool = True,
         cache_db_path: str = ".aeo_cache.db",
         respect_robots: bool = True,
+        wait_strategy: str = "load",
     ) -> None:
         self._user_agent = user_agent
         self._timeout = timeout
+        self._wait_strategy = wait_strategy
         self._max_redirects = max_redirects
         self._cache_enabled = cache_enabled
         self._cache_db_path = cache_db_path
@@ -145,16 +147,25 @@ class Crawler:
 
         # Playwright Render
         page = await self._context.new_page()
+        rendered_html = ""
+        response_headers = {}
         try:
-            response = await page.goto(
-                url,
-                timeout=self._timeout * 1000,
-                wait_until="networkidle",
-            )
-
-            response_headers = {}
-            if response:
-                response_headers = {k.lower(): v for k, v in response.headers.items()}
+            try:
+                response = await page.goto(
+                    url,
+                    timeout=self._timeout * 1000,
+                    wait_until=self._wait_strategy,  # type: ignore[arg-type]
+                )
+                if response:
+                    response_headers = {k.lower(): v for k, v in response.headers.items()}
+            except Exception as e:
+                # If the load strategy times out, fall back to domcontentloaded
+                # so we still capture rendered content from slow/long-polling sites.
+                if "timeout" in str(e).lower():
+                    with contextlib.suppress(Exception):
+                        await page.wait_for_load_state("domcontentloaded", timeout=5000)
+                else:
+                    raise
 
             if wait_for_ready:
                 with contextlib.suppress(Exception):

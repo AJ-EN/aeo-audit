@@ -1,10 +1,12 @@
 # AEO Auditor CLI
 
-[![PyPI version](https://img.shields.io/pypi/v/aeo-audit.svg)](https://pypi.org/project/aeo-audit/)
-[![Build Status](https://github.com/ayushjangid/aeo-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/ayushjangid/aeo-audit/actions)
+[![Build Status](https://github.com/AJ-EN/aeo-audit/actions/workflows/ci.yml/badge.svg)](https://github.com/AJ-EN/aeo-audit/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 
-Scan websites and score their **Agent/Engine Optimization (AEO) readiness** (0-100) across 5 dimensions: Discovery, Identity, Capabilities, Commerce, and Trust.
+**PageSpeed for AI agents.** Scan any website and score its **Agent/Engine Optimization (AEO) readiness** across 5 dimensions — Discovery, Identity, Capabilities, Commerce, and Trust — then get a graded report with prioritized, actionable fixes.
+
+Grades are **relative**: a site is ranked against a benchmark corpus (A = top tier of agent-readiness today), so the score stays a meaningful, movable target while agent-native standards are still emerging.
 
 ---
 
@@ -31,13 +33,17 @@ graph TD
 ## Installation
 
 ### 1. System Dependencies (Required for WeasyPrint PDF)
+
 PDF reports require external layout libraries installed on your OS:
 
 - **macOS (Homebrew)**:
+
   ```bash
   brew install pango cairo gdk-pixbuf upx
   ```
+
 - **Ubuntu/Debian**:
+
   ```bash
   sudo apt-get update
   sudo apt-get install -y libpango-1.0-0 libcairo2 libgdk-pixbuf-2.0-0 upx
@@ -46,22 +52,44 @@ PDF reports require external layout libraries installed on your OS:
 ### 2. Install Methods
 
 #### Method A: Via `pipx` (Recommended for Python CLI apps)
+
 ```bash
-pipx install aeo-audit
+# From GitHub (works today):
+pipx install git+https://github.com/AJ-EN/aeo-audit.git
+
+# From PyPI (once published):
+# pipx install aeo-audit
+```
+
+After installing, download the headless browser Playwright needs:
+
+```bash
+playwright install chromium
 ```
 
 #### Method B: Standalone Binary Installer (No Python Needed)
+
 Run the automated installation script:
+
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ayushjangid/aeo-audit/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AJ-EN/aeo-audit/main/scripts/install.sh | bash
 ```
 
+> [!IMPORTANT]
+> The binary still needs a Chromium runtime. If a scan reports a missing browser,
+> install one with `playwright install chromium` and point the binary at it:
+> `export PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright"` (macOS)
+> or the equivalent cache path on your OS.
+
 #### Method C: Source installation
+
 ```bash
-git clone https://github.com/ayushjangid/aeo-audit.git
+git clone https://github.com/AJ-EN/aeo-audit.git
 cd aeo-audit
 pip install -e .
+playwright install chromium
 ```
+
 > [!NOTE]
 > If WeasyPrint throws rendering or font warnings on Python 3.14+, we recommend pinning `pydyf==0.10.0`.
 
@@ -87,21 +115,33 @@ aeo-audit scan https://api.example.com --format json --output report.json
 
 ---
 
-## Configuration (`config.yaml`)
+## Scoring & Grading
 
-`aeo-audit` uses a configuration file to define grading scales, category scores, and check weights.
+Each of the 26 checks returns a raw score (`0.0`–`1.0`). Checks roll up into 5 weighted category scores, which roll up into a single `0–100` overall score. The grade is then assigned **by percentile rank against a benchmark corpus** — so it reflects how a site compares to the field, not an absolute bar that nobody clears yet.
 
-### Category Scoring Structure
+### Category weights
 
-| Category | Default Weight | Target Objectives |
-|----------|----------------|-------------------|
-| **Discovery** | `0.25` | Bot accessibility policies, Sitemap, DNS, and MCP discovery. |
-| **Identity** | `0.15` | Trust ownership validation (DID Docs, OAuth, Wallet Hints). |
-| **Capabilities** | `0.25` | Interface documentation (OpenAPI, GraphQL schemas, webhooks). |
-| **Commerce** | `0.20` | Dynamic agent transactions (agent-pricing.json, Stripe/Crypto). |
-| **Trust** | `0.15` | Audit Logs, SLA page, live checks, error structures. |
+`aeo-audit` is **foundation-weighted**: dimensions where well-run APIs already differ today (Trust, Capabilities, Discovery) carry the most weight, while emerging agent-native dimensions (Identity, parts of Commerce) contribute upside without dominating the score.
 
-For a complete layout of configuration schema details, check out [CONFIG_REFERENCE.md](file:///Users/ayushjangid/Developer/aeo-audit-cli/docs/CONFIG_REFERENCE.md).
+| Category | Weight | What it measures |
+|----------|--------|------------------|
+| **Discovery** | `0.25` | robots/agent access, sitemap, `.well-known`, DNS, and MCP discovery. |
+| **Capabilities** | `0.25` | Interface docs — OpenAPI, JSON Schema, GraphQL, async webhooks. |
+| **Trust** | `0.25` | SLA/status page, structured errors, health checks, audit logs. |
+| **Commerce** | `0.15` | Agent transactions — pricing, Stripe/crypto hints, usage metering. |
+| **Identity** | `0.10` | Ownership & auth — DID docs, OAuth metadata, wallet hints. |
+
+### Grade bands (percentile)
+
+| Grade | Percentile | Meaning |
+|-------|-----------|---------|
+| **A** | top 10% | Leading the field on agent-readiness. |
+| **B** | top 30% | Strong; a few high-leverage gaps. |
+| **C** | top 60% | Foundational signals present, frontier gaps. |
+| **D** | top 85% | Minimal agent-readiness. |
+| **F** | bottom 15% | Not addressed. |
+
+Weights, thresholds, and grade bands are all defined in `config.yaml` and overridable via a custom config. See [docs/CONFIG_REFERENCE.md](docs/CONFIG_REFERENCE.md).
 
 ---
 
@@ -114,7 +154,7 @@ You can easily configure `aeo-audit` as a compliance block (exits with code `2` 
   run: aeo-audit scan https://preview.example.com --fail-on-grade B --format terminal
 ```
 
-See [CI_RECIPES.md](file:///Users/ayushjangid/Developer/aeo-audit-cli/docs/CI_RECIPES.md) for GitHub Actions, GitLab CI, and Git hooks code snippets.
+See [docs/CI_RECIPES.md](docs/CI_RECIPES.md) for GitHub Actions, GitLab CI, and Git hooks code snippets.
 
 ---
 
@@ -122,20 +162,24 @@ See [CI_RECIPES.md](file:///Users/ayushjangid/Developer/aeo-audit-cli/docs/CI_RE
 
 To implement custom checking rules, subclass `BaseCheck` and expose it under the `aeo_audit.checks` entrypoint.
 
-See [CUSTOM_CHECKS.md](file:///Users/ayushjangid/Developer/aeo-audit-cli/docs/CUSTOM_CHECKS.md) for a complete template walkthrough.
+See [docs/CUSTOM_CHECKS.md](docs/CUSTOM_CHECKS.md) for a complete template walkthrough.
 
 ---
 
 ## FAQ
 
 #### 1. How do I install Playwright browser binaries?
+
 If running the scanner for the first time, you may need to install Playwright's headless browser binaries:
+
 ```bash
 playwright install chromium
 ```
 
 #### 2. Where is the SQLite cache stored?
+
 By default, the SQLite cache database is created in your working directory as `.aeo_cache.db` to speed up consecutive audit scans. This can be customized or disabled using `--no-cache`.
 
 #### 3. Why are my PDF files empty or raising font errors?
+
 Ensure you have installed the native `pango` and `cairo` system dependencies (see Step 1 of installation).

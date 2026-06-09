@@ -120,13 +120,15 @@ class ScanEngine:
 
         crawler_settings = config.crawler
         ua = user_agent or crawler_settings.get("user_agent", "AEOAuditor/1.0")
-        to = timeout or crawler_settings.get("timeout", 30)
+        to = timeout or crawler_settings.get("timeout", 45)
+        wait_strategy = crawler_settings.get("wait_strategy", "load")
         cache_enabled = not no_cache
 
         async with Crawler(
             user_agent=ua,
             timeout=to,
             cache_enabled=cache_enabled,
+            wait_strategy=wait_strategy,
         ) as crawler:
             context = await crawler.fetch(url)
 
