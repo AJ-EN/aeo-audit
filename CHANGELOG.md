@@ -4,6 +4,17 @@ All notable changes to `aeo-audit` are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-06-10
+
+### Changed
+- CI: bumped GitHub Actions to their Node 24 majors (`checkout@v6`,
+  `setup-python@v6`, `upload-artifact@v7`, `download-artifact@v8`).
+- Refreshed the benchmark corpus under the fixed scoring so percentile grades
+  rank sites against a field measured the same way.
+
+### Added
+- First release published to PyPI (`pip install aeo-audit`).
+
 ## [1.1.0] - 2026-06-09
 
 Launch-readiness release: makes the score a usable feedback loop and fixes
