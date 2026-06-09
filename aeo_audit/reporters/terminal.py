@@ -28,23 +28,40 @@ class TerminalReporter:
 
         grade = scorecard.grade
         grade_col = self.grade_color(grade)
+        # Colour the absolute score on an absolute band, NOT the relative grade,
+        # so a low score is never shown in celebratory green.
+        score = scorecard.overall_score
+        score_col = "green" if score >= 70 else ("yellow" if score >= 40 else "red")
 
-        # Build score text
+        # Lead with the absolute, verifiable truth: the score and checks passed.
         overall_text = Text()
         overall_text.append("URL: ", style="bold")
         overall_text.append(scorecard.url + "\n")
         overall_text.append("Score: ", style="bold")
-        overall_text.append(f"{scorecard.overall_score:.1f}/100", style=f"bold {grade_col}")
-        overall_text.append("  Grade: ", style="bold")
-        overall_text.append(grade.value, style=f"bold {grade_col}")
-
-        if scorecard.percentile is not None:
-            overall_text.append("  Percentile: ", style="bold")
-            overall_text.append(f"{scorecard.percentile:.0f}th")
-
-        overall_text.append("  CI: ", style="bold")
+        overall_text.append(f"{score:.1f}/100", style=f"bold {score_col}")
         overall_text.append(
-            f"[{scorecard.confidence_interval.lower:.1f}, {scorecard.confidence_interval.upper:.1f}]"
+            f"   passes {scorecard.passed_checks}/{scorecard.total_checks} checks", style="bold"
+        )
+
+        # Percentile is a RELATIVE rank — label it with the corpus size so it is
+        # never mistaken for an absolute claim.
+        if scorecard.percentile is not None and scorecard.benchmark_size > 0:
+            overall_text.append("\nRank:  ", style="bold")
+            overall_text.append(
+                f"{scorecard.percentile:.0f}th percentile of {scorecard.benchmark_size} benchmarked sites"
+            )
+            overall_text.append("   grade ", style="bold")
+            overall_text.append(grade.value, style=f"bold {grade_col}")
+            overall_text.append(" (relative)", style="dim")
+        else:
+            overall_text.append("\nGrade: ", style="bold")
+            overall_text.append(grade.value, style=f"bold {grade_col}")
+            overall_text.append(" (absolute)", style="dim")
+
+        overall_text.append("\n95% CI: ", style="bold")
+        overall_text.append(
+            f"[{scorecard.confidence_interval.lower:.1f}, {scorecard.confidence_interval.upper:.1f}]",
+            style="dim",
         )
 
         self.console.print(
@@ -87,14 +104,14 @@ class TerminalReporter:
         # Print top findings if they exist
         if scorecard.findings:
             findings_table = Table(
-                title="[bold]Top Findings / Issues[/bold]",
+                title="[bold]Top Gaps & How to Fix Them[/bold]",
                 show_header=True,
                 header_style="bold magenta",
                 box=None,
             )
-            findings_table.add_column("Severity", width=10)
-            findings_table.add_column("Check Name", width=25)
-            findings_table.add_column("Finding Title")
+            findings_table.add_column("Severity", width=9)
+            findings_table.add_column("Gap", width=28)
+            findings_table.add_column("How to fix")
 
             sorted_findings = sorted(
                 scorecard.findings,
@@ -109,7 +126,9 @@ class TerminalReporter:
                     else ("yellow" if f.severity.value == "medium" else "blue")
                 )
                 findings_table.add_row(
-                    f"[{sev_color}]{f.severity.value.upper()}[/]", f.check_name, f.title
+                    f"[{sev_color}]{f.severity.value.upper()}[/]",
+                    f.title,
+                    f.recommendation or f.description,
                 )
             self.console.print(findings_table)
 

@@ -674,14 +674,21 @@
                     <div class="grade-badge grade-{{ scorecard.grade.value }}">
                         {{ scorecard.grade.value }}
                     </div>
+                    {%- if scorecard.benchmark_size > 0 %}
+                    <p style="font-size:0.7rem;opacity:0.55;margin-top:6px;text-align:center;">grade is relative to {{ scorecard.benchmark_size }} benchmarked sites</p>
+                    {%- endif %}
                 </div>
 
                 <div class="metrics-grid">
                     <div class="metric-item">
-                        <h4>Percentile</h4>
+                        <h4>Checks Passed</h4>
+                        <p>{{ scorecard.passed_checks }}/{{ scorecard.total_checks }}</p>
+                    </div>
+                    <div class="metric-item">
+                        <h4>Rank</h4>
                         <p>
-                            {%- if scorecard.percentile is not none %}
-                                {{ "%.0f"|format(scorecard.percentile) }}th
+                            {%- if scorecard.percentile is not none and scorecard.benchmark_size > 0 %}
+                                {{ "%.0f"|format(scorecard.percentile) }}th pctile · {{ scorecard.benchmark_size }} sites
                             {%- else %}
                                 N/A
                             {%- endif %}
@@ -694,10 +701,6 @@
                     <div class="metric-item">
                         <h4>Scan Duration</h4>
                         <p>{{ "%.0f"|format(scan_metadata.duration_ms) }}ms</p>
-                    </div>
-                    <div class="metric-item">
-                        <h4>Passed Checks</h4>
-                        <p>{{ scorecard.passed_checks }}/{{ scorecard.total_checks }}</p>
                     </div>
                 </div>
             </div>
