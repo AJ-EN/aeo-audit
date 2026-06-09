@@ -17,7 +17,8 @@ from pathlib import Path
 from aeo_audit.engine import ConfigLoader
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "benchmarks" / "percentiles_v1.json"
+# Packaged with the wheel so installed users get percentile grading too.
+OUT = ROOT / "aeo_audit" / "benchmarks" / "percentiles_v1.json"
 
 
 def main(corpus: str) -> None:
