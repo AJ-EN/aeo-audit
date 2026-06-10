@@ -94,8 +94,7 @@ Dimensions where well-run APIs already differ (Trust, Capabilities, Discovery) c
 
 ### Next steps
 1. Profile polish (bio/website/pin) — user task.
-2. Draft + send the two outreach emails (trigger.dev / temporal.io).
-3. r/LLMDevs post (no-link-in-body).
+2. Draft + send the two outreach emails
 4. Show HN when the account is recovered.
 5. Set up feedback capture (GitHub Discussions / issue template) and iterate the product on real input.
 6. Post-launch: configure PyPI Trusted Publishing, delete `PYPI_API_TOKEN`.
