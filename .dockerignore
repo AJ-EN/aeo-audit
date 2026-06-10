@@ -1,0 +1,26 @@
+# Keep the Docker build context lean. The webdemo image is built from the repo
+# root (see webdemo/Dockerfile), so heavy local artifacts must be excluded here.
+.venv/
+venv/
+.git/
+.github/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+tests/
+case-studies/
+docs/
+*.db
+.aeo_cache.db
+*.sqlite
+*.sqlite3
+results.jsonl
+*.results.jsonl
+.coverage
+*.log
+.DS_Store
+__pycache__/
+*.py[cod]

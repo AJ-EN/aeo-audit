@@ -11,6 +11,8 @@ Grades are **relative**: a site is ranked against a benchmark corpus (A = top ti
 
 ![aeo-audit demo: scanning stripe.com](docs/assets/demo.gif)
 
+**⚡ [Try it in your browser — paste a URL, get a scorecard in ~30s](https://aj-en.github.io/aeo-audit/#scan)** — no install, no signup. (Rate-limited; the CLI below is unlimited.)
+
 **🔗 [Live leaderboard, methodology & example report → aj-en.github.io/aeo-audit](https://aj-en.github.io/aeo-audit/)**
 
 ---
@@ -188,3 +190,7 @@ By default, the SQLite cache database is created in your working directory as `.
 #### 3. Why are my PDF files empty or raising font errors?
 
 Ensure you have installed the native `pango` and `cairo` system dependencies (see Step 1 of installation).
+
+#### 4. Can I self-host the browser demo?
+
+Yes — the hosted "paste a URL, get a scorecard" demo lives in [`webdemo/`](webdemo/) and wraps the exact same `ScanEngine` the CLI runs. It ships with a Dockerfile (Chromium baked in), a Fly.io config that scales to zero, SSRF guarding, and per-IP rate limiting. See [webdemo/README.md](webdemo/README.md).

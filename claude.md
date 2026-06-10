@@ -73,7 +73,8 @@ Dimensions where well-run APIs already differ (Trust, Capabilities, Discovery) c
 ### Shipped / live
 - **PyPI**: `aeo-audit` **v1.2.1** live — `pip install aeo-audit` / `pipx install aeo-audit`. Verified working from a clean machine (browser auto-installs on first scan).
 - **GitHub**: `https://github.com/AJ-EN/aeo-audit` (owner is **AJ-EN**, not ayushjangid). Repo polished: badges, topics, homepage, demo GIF, CHANGELOG. Releases v1.0.0–v1.2.1 with Linux+macOS binaries attached.
-- **Landing page (GitHub Pages)**: `https://aj-en.github.io/aeo-audit/` — hero + demo GIF, the 19-site leaderboard, methodology, example report, social-preview card (`docs/assets/og-card.jpg`) + favicon. Served from `main` `/docs`.
+- **Landing page (GitHub Pages)**: `https://aj-en.github.io/aeo-audit/` — hero now leads with a **live "scan your site" widget** (example chips, animated scorecard, share-on-X button), plus demo GIF, the 19-site leaderboard, methodology, example report, social-preview card (`docs/assets/og-card.jpg`) + favicon. Served from `main` `/docs`.
+- **Hosted web demo** (`webdemo/`, 2026-06-11): FastAPI wrapper around `ScanEngine` — built + verified end-to-end (SSRF guard, 5 scans/hr/IP, concurrency cap 2, CORS locked to `aj-en.github.io`), **NOT yet deployed**. Deploy: `fly deploy -c webdemo/fly.toml` from repo root (user task — needs Fly account). Landing widget points at `https://aeo-audit-demo.fly.dev` (the `DEMO_API` const in `docs/index.html`) and degrades gracefully to a "use the CLI" message until it's live.
 - All 26 checks, 4 reporters, CLI (scan/batch/diff/config/monitor), 206 tests passing, `mypy --strict` + `ruff` clean, coverage ~80%.
 
 ### Launch status (soft launch done 2026-06-10)
@@ -93,8 +94,9 @@ Dimensions where well-run APIs already differ (Trust, Capabilities, Discovery) c
 - Position the user as **a builder in the agentic-web space**, not "the AEO Audit guy" — AEO Audit is chapter one. Bio: `Building open-source tools for the agentic web. Currently: aeo-audit, a scanner for AI-agent readiness.`
 
 ### Next steps
-1. Profile polish (bio/website/pin) — user task.
-2. Draft + send the two outreach emails
+1. **Deploy the hosted demo** — user task: `fly launch --copy-config --no-deploy -c webdemo/fly.toml` then `fly deploy -c webdemo/fly.toml` from repo root; verify the landing-page scan widget goes live.
+2. Profile polish (bio/website/pin) — user task.
+3. Draft + send the two outreach emails (now stronger: include the "scan yourself in the browser" link).
 4. Show HN when the account is recovered.
 5. Set up feedback capture (GitHub Discussions / issue template) and iterate the product on real input.
 6. Post-launch: configure PyPI Trusted Publishing, delete `PYPI_API_TOKEN`.

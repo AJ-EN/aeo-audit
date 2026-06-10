@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEO Audit — Scan your site for AI-agent readiness</title>
+<meta name="description" content="Paste a URL and score its readiness for AI agents across 5 dimensions. Same engine as the open-source CLI.">
+<meta property="og:title" content="AEO Audit — Scan your site for AI agents">
+<meta property="og:description" content="Paste a URL, get an AEO scorecard in ~30s. The best dev tools score under 33/100.">
+<meta property="og:type" content="website">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #0a0d12; --panel: #11161d; --panel2: #161c24; --border: #232b36;
+    --text: #e6edf3; --muted: #8b97a7; --accent: #2ee6a6; --accent2: #58a6ff;
+    --A: #2ee6a6; --B: #58a6ff; --C: #f0b429; --D: #f97316; --F: #f4576b;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: var(--accent2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 24px; position: relative; }
+  .mono { font-family: var(--mono); }
+
+  /* Soft glow behind the hero — makes the dark page feel designed, not empty */
+  .glow {
+    position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+    width: 720px; height: 480px; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 50% 45% at 42% 40%, rgba(46,230,166,.13), transparent 70%),
+      radial-gradient(ellipse 50% 45% at 60% 50%, rgba(88,166,255,.11), transparent 70%);
+    filter: blur(8px);
+  }
+
+  header { text-align: center; padding: 64px 0 28px; position: relative; z-index: 1; }
+  .badge-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 26px; }
+  .pill { font-size: 12px; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-family: var(--mono); background: rgba(17,22,29,.6); }
+  .pill a { color: inherit; }
+  h1 { font-size: clamp(30px, 5vw, 46px); line-height: 1.08; letter-spacing: -0.02em; font-weight: 800; }
+  h1 .grad { background: linear-gradient(120deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); font-size: 17px; margin-top: 16px; max-width: 560px; margin-left: auto; margin-right: auto; }
+
+  /* Scan form */
+  form.scan { display: flex; gap: 10px; margin: 34px 0 0; flex-wrap: wrap; }
+  input[type=text] {
+    flex: 1; min-width: 220px; background: rgba(17,22,29,.85); border: 1px solid var(--border);
+    color: var(--text); border-radius: 12px; padding: 15px 18px; font-size: 16px;
+    font-family: var(--mono); outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(88,166,255,.15); }
+  button.go {
+    background: linear-gradient(120deg, var(--accent), #25c990); color: #04120c; border: 0; border-radius: 12px;
+    padding: 15px 28px; font-size: 16px; font-weight: 800; cursor: pointer;
+    transition: transform .12s, opacity .15s; white-space: nowrap;
+    box-shadow: 0 8px 24px -10px rgba(46,230,166,.5);
+  }
+  button.go:hover { transform: translateY(-1px); }
+  button.go:disabled { opacity: .55; cursor: progress; transform: none; }
+
+  /* Example chips */
+  .examples { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 16px; color: var(--muted); font-size: 13px; }
+  .chip {
+    font-family: var(--mono); font-size: 12.5px; color: var(--accent2);
+    border: 1px solid var(--border); background: rgba(22,28,36,.7); border-radius: 999px;
+    padding: 4px 12px; cursor: pointer; transition: border-color .15s, color .15s;
+  }
+  .chip:hover { border-color: var(--accent2); }
+  .hint { color: var(--muted); font-size: 13px; text-align: center; margin-top: 14px; }
+  .err { color: var(--F); font-size: 14px; text-align: center; margin-top: 12px; min-height: 20px; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 36px 0; color: var(--muted); display: none; position: relative; z-index: 1; }
+  .loading.show { display: block; }
+  .spinner { width: 34px; height: 34px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; margin: 0 auto 16px; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-step { font-family: var(--mono); font-size: 14px; }
+  .loading-note { font-size: 12.5px; margin-top: 8px; opacity: .7; }
+
+  /* Result card */
+  .card {
+    background: linear-gradient(180deg, var(--panel), #0e1319); border: 1px solid var(--border);
+    border-radius: 18px; padding: 30px; margin-top: 28px; display: none;
+    box-shadow: 0 32px 80px -32px rgba(0,0,0,.8); position: relative; z-index: 1;
+  }
+  .card.show { display: block; animation: rise .45s cubic-bezier(.2,.8,.2,1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+  .scored-url { font-family: var(--mono); font-size: 13px; color: var(--muted); word-break: break-all; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .topline { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .scorebox { display: flex; align-items: baseline; gap: 6px; }
+  .score-num { font-size: 64px; font-weight: 800; line-height: 1; font-family: var(--mono); letter-spacing: -0.03em; }
+  .score-den { font-size: 22px; color: var(--muted); font-family: var(--mono); }
+  .grade-badge { font-size: 40px; font-weight: 800; width: 76px; height: 76px; border-radius: 16px; display: grid; place-items: center; font-family: var(--mono); }
+  .meta { color: var(--muted); font-size: 15px; margin-top: 4px; }
+  .meta strong { color: var(--text); }
+
+  /* Category bars */
+  .cats { margin-top: 26px; display: grid; gap: 12px; }
+  .cat { display: grid; grid-template-columns: 110px 1fr 52px; align-items: center; gap: 12px; }
+  .cat-name { font-size: 14px; text-transform: capitalize; color: var(--muted); }
+  .track { background: var(--panel2); border-radius: 999px; height: 9px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 999px; width: 0; transition: width .8s cubic-bezier(.2,.8,.2,1); }
+  .cat-val { font-family: var(--mono); font-size: 14px; text-align: right; }
+
+  /* Fix list */
+  .section-title { margin-top: 28px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+  .fixes { margin-top: 12px; display: grid; gap: 8px; }
+  .fix { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .tag { font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 5px; text-transform: uppercase; flex-shrink: 0; margin-top: 2px; }
+  .tag.fail { background: rgba(244,87,107,.15); color: var(--F); }
+  .tag.warn { background: rgba(240,180,41,.15); color: var(--C); }
+  .fix-body { font-size: 14px; }
+  .fix-name { font-family: var(--mono); font-weight: 600; }
+  .fix-msg { color: var(--muted); font-size: 13px; }
+  .more-fixes { color: var(--muted); font-size: 13px; margin-top: 8px; text-align: center; }
+
+  /* Actions row: share + install */
+  .actions { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--border); display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px;
+    font-weight: 600; font-size: 14.5px; border: 1px solid var(--border); color: var(--text);
+    background: var(--panel2); transition: .15s; cursor: pointer; font-family: inherit;
+  }
+  .btn:hover { border-color: var(--accent); text-decoration: none; transform: translateY(-1px); }
+  .install-line { margin-top: 16px; text-align: center; }
+  .install-line code {
+    background: #05080c; border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px;
+    font-family: var(--mono); font-size: 13.5px; color: var(--accent); display: inline-block; cursor: pointer;
+  }
+  .install-line .note { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 48px 0 60px; position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="glow"></div>
+
+  <header>
+    <div class="badge-row">
+      <span class="pill">open source</span>
+      <span class="pill">26 checks · 5 dimensions</span>
+      <span class="pill"><a href="https://github.com/AJ-EN/aeo-audit">★ GitHub</a></span>
+    </div>
+    <h1>How ready is your site for <span class="grad">AI agents</span>?</h1>
+    <p class="sub">Paste a URL. Get a 0–100 AEO score across Discovery, Identity, Capabilities, Commerce &amp; Trust — in about 30 seconds. Same engine as the open-source CLI.</p>
+
+    <form class="scan" id="scanForm">
+      <input type="text" id="url" placeholder="yoursite.com" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <button type="submit" class="go" id="scanBtn">Scan</button>
+    </form>
+    <div class="examples">
+      <span>or try</span>
+      <button type="button" class="chip" data-url="stripe.com">stripe.com</button>
+      <button type="button" class="chip" data-url="linear.app">linear.app</button>
+      <button type="button" class="chip" data-url="vercel.com">vercel.com</button>
+    </div>
+    <p class="hint">No signup. We don't store your page. Rate-limited — for unlimited scans, install the CLI.</p>
+    <p class="err" id="err"></p>
+  </header>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-step" id="loadingStep">Launching a headless browser…</div>
+    <div class="loading-note">A real Chromium visits the site and runs 26 deterministic checks.</div>
+  </div>
+
+  <div class="card" id="card">
+    <div class="scored-url mono"><span class="dot"></span><span id="scoredUrl"></span></div>
+    <div class="topline">
+      <div class="grade-badge" id="grade"></div>
+      <div>
+        <div class="scorebox"><span class="score-num" id="scoreNum">0</span><span class="score-den">/100</span></div>
+        <div class="meta" id="metaLine"></div>
+      </div>
+    </div>
+
+    <div class="cats" id="cats"></div>
+
+    <div id="fixesWrap" style="display:none;">
+      <div class="section-title">Top fixes</div>
+      <div class="fixes" id="fixes"></div>
+      <div class="more-fixes" id="moreFixes"></div>
+    </div>
+
+    <div class="actions">
+      <a class="btn" id="shareBtn" target="_blank" rel="noopener">𝕏 &nbsp;Share your score</a>
+      <a class="btn" href="https://github.com/AJ-EN/aeo-audit">★ Star on GitHub</a>
+    </div>
+    <div class="install-line">
+      <code id="ctaCmd" title="Click to copy">pipx install aeo-audit</code>
+      <div class="note">Get the full report — every check, evidence, HTML/PDF export — and scan as much as you want locally.</div>
+    </div>
+  </div>
+
+  <footer>
+    Open-source · <a href="https://github.com/AJ-EN/aeo-audit">GitHub</a> ·
+    <a href="https://pypi.org/project/aeo-audit/">PyPI</a> ·
+    <a href="https://aj-en.github.io/aeo-audit/">Leaderboard &amp; methodology</a><br>
+    <span class="mono" style="font-size:12px">AEO = Agent/Engine Optimization</span>
+  </footer>
+</div>
+
+<script>
+const GRADE_COLORS = { A: "var(--A)", B: "var(--B)", C: "var(--C)", D: "var(--D)", F: "var(--F)" };
+const form = document.getElementById("scanForm");
+const btn = document.getElementById("scanBtn");
+const errEl = document.getElementById("err");
+const loading = document.getElementById("loading");
+const loadingStep = document.getElementById("loadingStep");
+const card = document.getElementById("card");
+
+const STEPS = [
+  "Launching a headless browser…",
+  "Fetching robots.txt, sitemaps & well-known endpoints…",
+  "Looking for structured data & API specs…",
+  "Running 26 checks…",
+  "Scoring & ranking against the benchmark corpus…",
+];
+let stepTimer = null;
+
+function cycleSteps() {
+  let i = 0;
+  loadingStep.textContent = STEPS[0];
+  stepTimer = setInterval(() => {
+    i = Math.min(i + 1, STEPS.length - 1);
+    loadingStep.textContent = STEPS[i];
+  }, 4000);
+}
+
+function animateCount(el, target) {
+  const start = performance.now(), dur = 900;
+  function tick(now) {
+    const p = Math.min((now - start) / dur, 1);
+    el.textContent = (target * (1 - Math.pow(1 - p, 3))).toFixed(1);
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = target.toFixed(1);
+  }
+  requestAnimationFrame(tick);
+}
+
+function render(d) {
+  document.getElementById("scoredUrl").textContent = d.url;
+
+  const gradeEl = document.getElementById("grade");
+  gradeEl.textContent = d.grade;
+  gradeEl.style.color = GRADE_COLORS[d.grade];
+  gradeEl.style.background = "color-mix(in srgb, " + GRADE_COLORS[d.grade] + " 14%, transparent)";
+
+  animateCount(document.getElementById("scoreNum"), d.overall_score);
+
+  let meta = `Passes <strong>${d.passed_checks}/${d.total_checks}</strong> checks`;
+  if (d.percentile !== null && d.benchmark_size > 0) {
+    meta += ` · beats <strong>${d.percentile.toFixed(0)}%</strong> of ${d.benchmark_size} benchmarked sites`;
+  }
+  document.getElementById("metaLine").innerHTML = meta;
+
+  const cats = document.getElementById("cats");
+  cats.innerHTML = "";
+  d.categories.forEach((c) => {
+    const row = document.createElement("div");
+    row.className = "cat";
+    row.innerHTML = `
+      <div class="cat-name">${c.name}</div>
+      <div class="track"><div class="fill" style="background:${GRADE_COLORS[c.grade]}"></div></div>
+      <div class="cat-val" style="color:${GRADE_COLORS[c.grade]}">${c.score.toFixed(0)}</div>`;
+    cats.appendChild(row);
+    requestAnimationFrame(() => {
+      row.querySelector(".fill").style.width = c.score + "%";
+    });
+  });
+
+  const fixesWrap = document.getElementById("fixesWrap");
+  const fixes = document.getElementById("fixes");
+  const moreFixes = document.getElementById("moreFixes");
+  fixes.innerHTML = "";
+  const top = d.fixes.slice(0, 6);
+  if (top.length) {
+    fixesWrap.style.display = "block";
+    top.forEach((f) => {
+      const el = document.createElement("div");
+      el.className = "fix";
+      el.innerHTML = `
+        <span class="tag ${f.status}">${f.status}</span>
+        <div class="fix-body">
+          <span class="fix-name">${f.name}</span>
+          <div class="fix-msg">${f.message || "—"}</div>
+        </div>`;
+      fixes.appendChild(el);
+    });
+    const rest = d.fixes.length - top.length;
+    moreFixes.textContent = rest > 0
+      ? `+ ${rest} more in the full CLI report`
+      : "";
+  } else {
+    fixesWrap.style.display = "none";
+  }
+
+  // Pre-filled share post — states the score plainly, no inflation.
+  const host = (() => { try { return new URL(d.url).hostname; } catch { return d.url; } })();
+  const text = `${host} scores ${d.overall_score.toFixed(1)}/100 for AI-agent readiness (passes ${d.passed_checks}/${d.total_checks} checks).\n\nScan yours:`;
+  document.getElementById("shareBtn").href =
+    "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) +
+    "&url=" + encodeURIComponent(window.location.origin);
+
+  card.classList.add("show");
+  card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+async function runScan(url) {
+  errEl.textContent = "";
+  card.classList.remove("show");
+  if (!url) { errEl.textContent = "Please enter a URL."; return; }
+
+  btn.disabled = true;
+  btn.textContent = "Scanning…";
+  loading.classList.add("show");
+  cycleSteps();
+
+  try {
+    const res = await fetch("/api/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error || "Something went wrong.";
+    } else {
+      render(data);
+    }
+  } catch (_) {
+    errEl.textContent = "Network error — please try again.";
+  } finally {
+    clearInterval(stepTimer);
+    loading.classList.remove("show");
+    btn.disabled = false;
+    btn.textContent = "Scan";
+  }
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  runScan(document.getElementById("url").value.trim());
+});
+
+document.querySelectorAll(".chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    document.getElementById("url").value = chip.dataset.url;
+    runScan(chip.dataset.url);
+  });
+});
+
+document.getElementById("ctaCmd").addEventListener("click", function () {
+  navigator.clipboard.writeText("pipx install aeo-audit");
+  const old = this.textContent;
+  this.textContent = "copied ✓";
+  setTimeout(() => { this.textContent = old; }, 1200);
+});
+</script>
+</body>
+</html>

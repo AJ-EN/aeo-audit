@@ -123,6 +123,9 @@
 ## Phase 8: Launch & Iterate [~]
 
 - [x] Soft launch on X (@Ayush_observer) — thread posted
+- [x] Hosted web demo built (`webdemo/`): FastAPI around `ScanEngine`, SSRF guard, rate limit, Dockerfile + fly.toml; verified end-to-end locally
+- [x] Landing page hero now embeds the live scan widget (chips, scorecard, share button; graceful fallback when API is down)
+- [ ] Deploy demo to Fly.io: `fly deploy -c webdemo/fly.toml` from repo root — **user task** (needs Fly account; first build is slow, bakes Chromium)
 - [ ] r/LLMDevs post (use no-link-in-body trick; links in first comment)
 - [ ] Recover HN account (emailed hn@ycombinator.com) -> then Show HN (one-shot, don't burn early)
 - [ ] Write + send outreach emails: trigger.dev (Eric Allam), temporal.io (Maxim Fateev)

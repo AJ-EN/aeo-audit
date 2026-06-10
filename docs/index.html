@@ -49,6 +49,68 @@
   .copy { cursor: pointer; color: var(--muted); border: 1px solid var(--border); background: var(--panel); border-radius: 6px; padding: 4px 10px; font-size: 12px; font-family: var(--mono); white-space: nowrap; }
   .copy:hover { color: var(--accent); border-color: var(--accent); }
 
+  /* Live scan widget (calls the hosted demo API) */
+  .scanform { display: flex; gap: 10px; margin: 30px auto 0; max-width: 560px; flex-wrap: wrap; }
+  .scanform input {
+    flex: 1; min-width: 200px; background: rgba(17,22,29,.85); border: 1px solid var(--border);
+    color: var(--text); border-radius: 11px; padding: 14px 17px; font-size: 16px;
+    font-family: var(--mono); outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  .scanform input:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px rgba(88,166,255,.15); }
+  .scanform button {
+    background: linear-gradient(120deg, var(--accent), #25c990); color: #04120c; border: 0; border-radius: 11px;
+    padding: 14px 26px; font-size: 16px; font-weight: 800; cursor: pointer;
+    transition: transform .12s, opacity .15s; white-space: nowrap; font-family: inherit;
+    box-shadow: 0 8px 24px -10px rgba(46,230,166,.5);
+  }
+  .scanform button:hover { transform: translateY(-1px); }
+  .scanform button:disabled { opacity: .55; cursor: progress; transform: none; }
+  .examples { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 14px; color: var(--muted); font-size: 13px; }
+  .chip {
+    font-family: var(--mono); font-size: 12.5px; color: var(--accent2);
+    border: 1px solid var(--border); background: rgba(22,28,36,.7); border-radius: 999px;
+    padding: 4px 12px; cursor: pointer; transition: border-color .15s;
+  }
+  .chip:hover { border-color: var(--accent2); }
+  .scanhint { color: var(--muted); font-size: 13px; margin-top: 12px; }
+  .scanerr { color: var(--F); font-size: 14px; margin-top: 10px; min-height: 20px; }
+  .scanload { display: none; padding: 28px 0 4px; color: var(--muted); }
+  .scanload.show { display: block; }
+  .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; margin: 0 auto 14px; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .scanstep { font-family: var(--mono); font-size: 13.5px; }
+
+  .scancard {
+    background: linear-gradient(180deg, var(--panel), #0e1319); border: 1px solid var(--border);
+    border-radius: 16px; padding: 26px; margin: 26px auto 0; max-width: 640px; display: none;
+    text-align: left; box-shadow: 0 32px 80px -32px rgba(0,0,0,.8);
+  }
+  .scancard.show { display: block; animation: rise .45s cubic-bezier(.2,.8,.2,1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .scanurl { font-family: var(--mono); font-size: 13px; color: var(--muted); word-break: break-all; margin-bottom: 16px; }
+  .topline { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .gradebig { font-size: 36px; font-weight: 800; width: 68px; height: 68px; border-radius: 14px; display: grid; place-items: center; font-family: var(--mono); }
+  .scorebox { display: flex; align-items: baseline; gap: 6px; }
+  .score-num { font-size: 54px; font-weight: 800; line-height: 1; font-family: var(--mono); letter-spacing: -0.03em; }
+  .score-den { font-size: 20px; color: var(--muted); font-family: var(--mono); }
+  .scanmeta { color: var(--muted); font-size: 14.5px; margin-top: 2px; }
+  .scanmeta strong { color: var(--text); }
+  .cats { margin-top: 22px; display: grid; gap: 10px; }
+  .cat { display: grid; grid-template-columns: 104px 1fr 46px; align-items: center; gap: 12px; }
+  .cat-name { font-size: 13.5px; text-transform: capitalize; color: var(--muted); }
+  .track { background: var(--panel2); border-radius: 999px; height: 8px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 999px; width: 0; transition: width .8s cubic-bezier(.2,.8,.2,1); }
+  .cat-val { font-family: var(--mono); font-size: 13.5px; text-align: right; }
+  .fixtitle { margin-top: 22px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+  .fixes { margin-top: 10px; display: grid; gap: 7px; }
+  .fix { background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; padding: 10px 13px; display: flex; gap: 11px; align-items: flex-start; }
+  .ftag { font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 5px; text-transform: uppercase; flex-shrink: 0; margin-top: 2px; }
+  .ftag.fail { background: rgba(244,87,107,.15); color: var(--F); }
+  .ftag.warn { background: rgba(240,180,41,.15); color: var(--C); }
+  .fix-name { font-family: var(--mono); font-weight: 600; font-size: 13.5px; }
+  .fix-msg { color: var(--muted); font-size: 12.5px; }
+  .scanactions { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
   .demo { margin: 44px auto 0; max-width: 860px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px -24px rgba(0,0,0,.7); }
   .demo img { display: block; width: 100%; }
 
@@ -106,6 +168,45 @@
     </div>
     <h1>PageSpeed for <span class="grad">AI Agents</span></h1>
     <p class="tag">AI agents are starting to use the web for us. <strong>Can they use your product?</strong> AEO Audit scans any site's agent-readiness and gives you a score, a rank, and an exact fix-list.</p>
+
+    <form class="scanform" id="scan">
+      <input type="text" id="scanUrl" placeholder="yoursite.com" autocomplete="off" spellcheck="false" />
+      <button type="submit" id="scanBtn">Scan free</button>
+    </form>
+    <div class="examples">
+      <span>or try</span>
+      <button type="button" class="chip" data-url="stripe.com">stripe.com</button>
+      <button type="button" class="chip" data-url="linear.app">linear.app</button>
+      <button type="button" class="chip" data-url="vercel.com">vercel.com</button>
+    </div>
+    <p class="scanhint">Live scan, ~30s. No signup, nothing stored. Rate-limited — the CLI below is unlimited.</p>
+    <p class="scanerr" id="scanErr"></p>
+
+    <div class="scanload" id="scanLoad">
+      <div class="spinner"></div>
+      <div class="scanstep" id="scanStep">Launching a headless browser…</div>
+    </div>
+
+    <div class="scancard" id="scanCard">
+      <div class="scanurl mono" id="scanCardUrl"></div>
+      <div class="topline">
+        <div class="gradebig" id="scanGrade"></div>
+        <div>
+          <div class="scorebox"><span class="score-num" id="scanScore">0</span><span class="score-den">/100</span></div>
+          <div class="scanmeta" id="scanMeta"></div>
+        </div>
+      </div>
+      <div class="cats" id="scanCats"></div>
+      <div id="scanFixWrap" style="display:none;">
+        <div class="fixtitle">Top fixes</div>
+        <div class="fixes" id="scanFixes"></div>
+      </div>
+      <div class="scanactions">
+        <a class="btn" id="scanShare" target="_blank" rel="noopener">𝕏 &nbsp;Share your score</a>
+        <a class="btn" href="https://github.com/AJ-EN/aeo-audit">★ Star on GitHub</a>
+      </div>
+    </div>
+
     <div class="cta">
       <a class="btn primary" href="https://github.com/AJ-EN/aeo-audit">★ Star on GitHub</a>
       <a class="btn" href="https://pypi.org/project/aeo-audit/">View on PyPI</a>
@@ -125,7 +226,7 @@
     <h2>19 popular dev tools, ranked by agent-readiness</h2>
     <p class="lead">The headline isn't who's on top — it's that <strong>nobody is ready yet</strong>. The best-scoring developer tool passes barely a third of the checks. The agentic web is early; this is the starting line.</p>
     <div class="lb" id="lb"></div>
-    <p class="lbnote">Score = % of 26 weighted checks passed (absolute). Grade = percentile rank <em>within these 19 sites</em> (relative) — the bar rises as the corpus grows. Benchmarked June 2026. <a href="https://github.com/AJ-EN/aeo-audit">Scan your own →</a></p>
+    <p class="lbnote">Score = % of 26 weighted checks passed (absolute). Grade = percentile rank <em>within these 19 sites</em> (relative) — the bar rises as the corpus grows. Benchmarked June 2026. <a href="#scan">Scan your own ↑</a></p>
   </section>
 
   <section id="methodology">
@@ -184,6 +285,149 @@
     </div>`;
   });
   document.getElementById('lb').innerHTML = html;
+</script>
+
+<script>
+  // Live scan widget — talks to the hosted demo (same engine as the CLI).
+  // If you deploy under a different Fly app name, update this one constant.
+  const DEMO_API = "https://aeo-audit-demo.fly.dev";
+
+  const GRADE_COLORS = { A: "var(--A)", B: "var(--B)", C: "var(--C)", D: "var(--D)", F: "var(--F)" };
+  const scanForm = document.getElementById("scan");
+  const scanBtn = document.getElementById("scanBtn");
+  const scanErr = document.getElementById("scanErr");
+  const scanLoad = document.getElementById("scanLoad");
+  const scanStep = document.getElementById("scanStep");
+  const scanCard = document.getElementById("scanCard");
+
+  const SCAN_STEPS = [
+    "Launching a headless browser…",
+    "Fetching robots.txt, sitemaps & well-known endpoints…",
+    "Looking for structured data & API specs…",
+    "Running 26 checks…",
+    "Scoring & ranking against the benchmark corpus…",
+  ];
+  let scanTimer = null;
+
+  function startSteps() {
+    let i = 0;
+    scanStep.textContent = SCAN_STEPS[0];
+    scanTimer = setInterval(() => {
+      i = Math.min(i + 1, SCAN_STEPS.length - 1);
+      scanStep.textContent = SCAN_STEPS[i];
+    }, 4000);
+  }
+
+  function countUp(el, target) {
+    const start = performance.now(), dur = 900;
+    function tick(now) {
+      const p = Math.min((now - start) / dur, 1);
+      el.textContent = (target * (1 - Math.pow(1 - p, 3))).toFixed(1);
+      if (p < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toFixed(1);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function renderScan(d) {
+    document.getElementById("scanCardUrl").textContent = "● " + d.url;
+
+    const g = document.getElementById("scanGrade");
+    g.textContent = d.grade;
+    g.style.color = GRADE_COLORS[d.grade];
+    g.style.background = "color-mix(in srgb, " + GRADE_COLORS[d.grade] + " 14%, transparent)";
+
+    countUp(document.getElementById("scanScore"), d.overall_score);
+
+    let meta = `Passes <strong>${d.passed_checks}/${d.total_checks}</strong> checks`;
+    if (d.percentile !== null && d.benchmark_size > 0) {
+      meta += ` · beats <strong>${d.percentile.toFixed(0)}%</strong> of ${d.benchmark_size} benchmarked sites`;
+    }
+    document.getElementById("scanMeta").innerHTML = meta;
+
+    const cats = document.getElementById("scanCats");
+    cats.innerHTML = "";
+    d.categories.forEach((c) => {
+      const row = document.createElement("div");
+      row.className = "cat";
+      row.innerHTML = `
+        <div class="cat-name">${c.name}</div>
+        <div class="track"><div class="fill" style="background:${GRADE_COLORS[c.grade]}"></div></div>
+        <div class="cat-val" style="color:${GRADE_COLORS[c.grade]}">${c.score.toFixed(0)}</div>`;
+      cats.appendChild(row);
+      requestAnimationFrame(() => { row.querySelector(".fill").style.width = c.score + "%"; });
+    });
+
+    const wrap = document.getElementById("scanFixWrap");
+    const fixes = document.getElementById("scanFixes");
+    fixes.innerHTML = "";
+    const top = d.fixes.slice(0, 4);
+    if (top.length) {
+      wrap.style.display = "block";
+      top.forEach((f) => {
+        const el = document.createElement("div");
+        el.className = "fix";
+        el.innerHTML = `
+          <span class="ftag ${f.status}">${f.status}</span>
+          <div>
+            <span class="fix-name">${f.name}</span>
+            <div class="fix-msg">${f.message || "—"}</div>
+          </div>`;
+        fixes.appendChild(el);
+      });
+    } else {
+      wrap.style.display = "none";
+    }
+
+    const host = (() => { try { return new URL(d.url).hostname; } catch { return d.url; } })();
+    const text = `${host} scores ${d.overall_score.toFixed(1)}/100 for AI-agent readiness (passes ${d.passed_checks}/${d.total_checks} checks).\n\nScan yours:`;
+    document.getElementById("scanShare").href =
+      "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) +
+      "&url=" + encodeURIComponent("https://aj-en.github.io/aeo-audit/");
+
+    scanCard.classList.add("show");
+    scanCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  async function runScan(url) {
+    scanErr.textContent = "";
+    scanCard.classList.remove("show");
+    if (!url) { scanErr.textContent = "Please enter a URL."; return; }
+
+    scanBtn.disabled = true;
+    scanBtn.textContent = "Scanning…";
+    scanLoad.classList.add("show");
+    startSteps();
+
+    try {
+      const res = await fetch(DEMO_API + "/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (!res.ok) scanErr.textContent = data.error || "Something went wrong.";
+      else renderScan(data);
+    } catch (_) {
+      scanErr.textContent = "The live demo is unreachable right now — the CLI below works offline: pipx install aeo-audit";
+    } finally {
+      clearInterval(scanTimer);
+      scanLoad.classList.remove("show");
+      scanBtn.disabled = false;
+      scanBtn.textContent = "Scan free";
+    }
+  }
+
+  scanForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    runScan(document.getElementById("scanUrl").value.trim());
+  });
+  document.querySelectorAll(".chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      document.getElementById("scanUrl").value = chip.dataset.url;
+      runScan(chip.dataset.url);
+    });
+  });
 </script>
 </body>
 </html>

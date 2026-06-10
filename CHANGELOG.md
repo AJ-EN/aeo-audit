@@ -4,6 +4,20 @@ All notable changes to `aeo-audit` are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Hosted web demo** (`webdemo/`, repo-only — not part of the PyPI package): a
+  FastAPI wrapper around the same `ScanEngine` the CLI runs — paste a URL, get
+  a live scorecard in ~30s, no install. Ships with an SSRF guard (DNS-resolves
+  the target and rejects private/loopback/link-local/metadata addresses),
+  per-IP rate limiting, a global concurrency cap, a Dockerfile with Chromium
+  baked in, and a Fly.io config that scales to zero when idle.
+- The landing page (`docs/index.html`) now embeds a live **"scan your site"
+  widget** in the hero — example chips, animated scorecard, top-fixes list, and
+  a share-your-score button that states the score plainly. Degrades gracefully
+  to the CLI install path when the demo API is unreachable.
+
 ## [1.2.1] - 2026-06-10
 
 ### Fixed

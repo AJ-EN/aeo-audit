@@ -1,0 +1,26 @@
+# Fly.io config for the AEO Audit hosted demo.
+# Deploy from the repo root:  fly deploy -c webdemo/fly.toml
+app = "aeo-audit-demo"
+primary_region = "iad"
+
+[build]
+  dockerfile = "webdemo/Dockerfile"
+
+[env]
+  PORT = "8080"
+  AEO_DEMO_CONCURRENCY = "2"
+  AEO_DEMO_RATE_PER_HOUR = "5"
+  AEO_DEMO_SCAN_TIMEOUT = "60"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Scale to zero when idle so an unused demo costs ~nothing.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  size = "shared-cpu-1x"
+  # Chromium is memory-hungry; 1GB is the floor. Bump to 2048 if you see OOMs.
+  memory = "1024mb"
