@@ -113,9 +113,27 @@
   - [x] `pipx install git+https://...` documented (PyPI marked "once published")
   - [x] Binary Chromium runtime documented (`PLAYWRIGHT_BROWSERS_PATH`)
   - [x] Fixed broken `file:///` doc links -> relative paths
-- [ ] Publish to PyPI (trusted publishing via CI)
-- [ ] Host `perfect/` mock as a live 100/100 demo target
-- [ ] Launch assets: GitHub polish, demo GIF/video, then GitHub -> Twitter -> Show HN -> Product Hunt
+- [x] Published to PyPI (v1.2.1, token auth; Trusted Publishing deferred post-launch)
+- [x] Reports lead with absolute score + checks-passed; percentile labeled "of N sites" (v1.2.0)
+- [x] Benchmark packaged inside the wheel (percentile grading was dead for installed users)
+- [x] `--version` reads from dist metadata; zero-setup first run (auto-installs Chromium) (v1.2.1)
+- [x] Launch assets: demo GIF, social card, badges, repo topics/homepage
+- [x] GitHub Pages landing page live: https://aj-en.github.io/aeo-audit/
+
+## Phase 8: Launch & Iterate [~]
+
+- [x] Soft launch on X (@Ayush_observer) — thread posted
+- [ ] r/LLMDevs post (use no-link-in-body trick; links in first comment)
+- [ ] Recover HN account (emailed hn@ycombinator.com) -> then Show HN (one-shot, don't burn early)
+- [ ] Write + send outreach emails: trigger.dev (Eric Allam), temporal.io (Maxim Fateev)
+- [ ] Profile polish: bio (agentic-web builder, not "AEO Audit guy"), website->landing, pin launch
+- [ ] Set up feedback capture (GitHub Discussions / issue template); iterate product on real input
+- [ ] Configure PyPI Trusted Publishing (OIDC); delete `PYPI_API_TOKEN` secret
+
+> NOTE for new sessions: `git push` fails from the agent env (`tls: bad record MAC`).
+> Use `gh api` Contents REST API for pushes, or have the user run `git push`.
+> Run everything via `.venv/bin/...`; set `PLAYWRIGHT_BROWSERS_PATH` for scans.
+> See `claude.md` -> "Current State (Handoff)" for full context.
 
 ## Quality Gates
 

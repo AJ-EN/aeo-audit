@@ -60,10 +60,42 @@ Dimensions where well-run APIs already differ (Trust, Capabilities, Discovery) c
 | 2026-06-09 | Percentile-relative grading | Absolute grades make every real site an F (standards are nascent); relative grades keep the score a movable target and the bar rises with the corpus |
 | 2026-06-09 | `robots_agent` self-fetch + tiered | Crawler never populated `context.robots_txt` (check always failed in prod); added self-fetch fallback and tiered scoring (explicit allow / allow-all / blocked) |
 | 2026-06-09 | `wait_strategy: load` | `networkidle` never settles on long-polling sites, causing spurious timeouts and score swings; `load` + `__AEO_READY__` is faster and deterministic |
+| 2026-06-10 | Reports lead with absolute truth | A site passing 6/26 checks showing a green "A" overstated; reports now lead with `score/100` + `passes X/Y checks`, label percentile as "rank of N benchmarked sites", and show a fix-list. Added `Scorecard.benchmark_size` |
+| 2026-06-10 | Benchmark shipped inside the wheel | Corpus lived at repo-root `benchmarks/` (outside `packages=["aeo_audit"]`), so pip-installed users silently got absolute grading (all F). Moved to `aeo_audit/benchmarks/`; updated `gen_benchmark.py` + `aeo_audit.spec` |
+| 2026-06-10 | `__version__` from dist metadata | Was hardcoded `1.0.0` in `__init__.py` and drifted; now `importlib.metadata.version("aeo-audit")` (single source of truth) |
+| 2026-06-10 | Auto-install Chromium on first run | `pip install` doesn't pull the browser; first scan crashed. Crawler now detects the missing browser, runs `playwright install chromium` once, and retries |
+| 2026-06-10 | Token publish (Trusted Publishing deferred) | Switched PyPI publish to OIDC, then reverted to `PYPI_API_TOKEN` so the urgent v1.1.2 release could ship before configuring a Trusted Publisher on PyPI (post-launch TODO) |
 
-## Current State
+## Current State (Handoff — last updated 2026-06-11)
 
-- **Phase**: 4 - Launch Readiness (In Progress)
-- **Completed (Phase 1-3)**: All 26 checks, 4 reporters (HTML, PDF, Rich Terminal, JSON), SQLite cache, CLI subcommands (scan, batch, diff, config, monitor), Homebrew/installer/Hatch/PyInstaller packaging.
-- **Completed (Phase 4)**: Scoring overhaul (foundation weights + percentile grading + seeded benchmark), `robots_agent` production-bug fix, crawl-flakiness fix, install-path fixes (repo owner refs, pipx-from-git, binary browser docs).
-- **Next**: Publish to PyPI; host the `perfect/` mock as a live 100/100 demo; build launch assets (GitHub polish, demo GIF/video) sequenced GitHub -> Twitter -> Show HN -> Product Hunt.
+**Phase 5 — Launched & iterating.** The product is built, shipped, and live; focus is now feedback + build-led iteration, not more building of core features.
+
+### Shipped / live
+- **PyPI**: `aeo-audit` **v1.2.1** live — `pip install aeo-audit` / `pipx install aeo-audit`. Verified working from a clean machine (browser auto-installs on first scan).
+- **GitHub**: `https://github.com/AJ-EN/aeo-audit` (owner is **AJ-EN**, not ayushjangid). Repo polished: badges, topics, homepage, demo GIF, CHANGELOG. Releases v1.0.0–v1.2.1 with Linux+macOS binaries attached.
+- **Landing page (GitHub Pages)**: `https://aj-en.github.io/aeo-audit/` — hero + demo GIF, the 19-site leaderboard, methodology, example report, social-preview card (`docs/assets/og-card.jpg`) + favicon. Served from `main` `/docs`.
+- All 26 checks, 4 reporters, CLI (scan/batch/diff/config/monitor), 206 tests passing, `mypy --strict` + `ruff` clean, coverage ~80%.
+
+### Launch status (soft launch done 2026-06-10)
+- **X**: launch thread posted from **@Ayush_observer** (12 followers — small account). Live.
+- **Reddit**: r/SideProject post was auto-removed by spam filter (low karma). r/LLMDevs not yet posted — must use the **no-link-in-body trick** (links go in the first comment) to survive the filter.
+- **Hacker News**: account (since 2021) is locked; recovery emailed to hn@ycombinator.com. **Show HN deferred** until it's back — it's one-shot per URL, don't burn it on a new/shaky account.
+- **Outreach emails** to trigger.dev (Eric Allam) / temporal.io (Maxim Fateev): drafted-in-conversation but **not yet written/sent**. Highest-value remaining channel (no gatekeeper).
+
+### CRITICAL gotchas for a new session (saves re-deriving)
+- **`git push` FAILS from the agent environment** (`tls: bad record MAC` — corrupts on anything but tiny payloads). Workaround that works: **GitHub Contents REST API** (`gh api -X PUT repos/AJ-EN/aeo-audit/contents/<path>` with base64 content), or have the **user run `git push`** from their own terminal. `gh api` works fine; only git's pack-transfer fails.
+- **Always run via the venv**: `.venv/bin/aeo-audit`, `.venv/bin/python -m pytest`. For any scan, set `PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright"`.
+- **Honest-grading principle (do NOT regress)**: score is absolute truth; grade is a *relative rank* and must always be labeled "of N sites". Never inflate a low-score site to a bare "A".
+- Full corpus re-scan → `aeo-audit batch targets.txt --format jsonl -o results.jsonl` then `python scripts/gen_benchmark.py results.jsonl`. `results.jsonl` is **gitignored** (scraped pages can contain secrets — GitHub push-protection once caught a Replicate token in it).
+
+### Strategy aligned with the user (don't relitigate)
+- Build > distribute (~80/20). Don't game follower metrics. The signal that matters: **does anyone scan/star/give real feedback** — driven by a better product, not more posts.
+- Position the user as **a builder in the agentic-web space**, not "the AEO Audit guy" — AEO Audit is chapter one. Bio: `Building open-source tools for the agentic web. Currently: aeo-audit, a scanner for AI-agent readiness.`
+
+### Next steps
+1. Profile polish (bio/website/pin) — user task.
+2. Draft + send the two outreach emails (trigger.dev / temporal.io).
+3. r/LLMDevs post (no-link-in-body).
+4. Show HN when the account is recovered.
+5. Set up feedback capture (GitHub Discussions / issue template) and iterate the product on real input.
+6. Post-launch: configure PyPI Trusted Publishing, delete `PYPI_API_TOKEN`.
