@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import subprocess
+import sys
 import urllib.parse
 import urllib.robotparser
 from typing import Any
@@ -53,7 +55,7 @@ class Crawler:
     async def __aenter__(self) -> Crawler:
         """Start browser and create context."""
         self._playwright = await async_playwright().start()
-        self._browser = await self._playwright.chromium.launch(headless=True)
+        self._browser = await self._launch_chromium()
         self._context = await self._browser.new_context(
             user_agent=self._user_agent,
             bypass_csp=True,
@@ -62,6 +64,39 @@ class Crawler:
             self._cache = ResponseCache(db_path=self._cache_db_path)
             self._cache.open()
         return self
+
+    async def _launch_chromium(self) -> Browser:
+        """Launch headless Chromium, auto-installing it on first run if missing.
+
+        `pip install aeo-audit` does not pull the browser binary, so a fresh
+        machine has no Chromium. Rather than crash with a raw Playwright error,
+        download it once (idempotent) and retry, falling back to a clear,
+        actionable message if that fails.
+        """
+        if self._playwright is None:
+            raise RuntimeError("Playwright is not started.")
+        try:
+            return await self._playwright.chromium.launch(headless=True)
+        except Exception as exc:
+            msg = str(exc)
+            if "Executable doesn't exist" not in msg and "playwright install" not in msg.lower():
+                raise
+            print(
+                "Chromium not found — installing it once (~30s, first run only)...",
+                file=sys.stderr,
+                flush=True,
+            )
+            try:
+                subprocess.run(
+                    [sys.executable, "-m", "playwright", "install", "chromium"],
+                    check=True,
+                )
+            except Exception as install_exc:
+                raise RuntimeError(
+                    "Chromium is required but could not be installed automatically. "
+                    "Install it once with:\n    playwright install chromium"
+                ) from install_exc
+            return await self._playwright.chromium.launch(headless=True)
 
     async def __aexit__(self, *args: Any) -> None:
         """Close browser context."""
