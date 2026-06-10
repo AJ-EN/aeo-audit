@@ -64,7 +64,7 @@ pipx install aeo-audit      # isolated CLI install (recommended)
 # pipx install git+https://github.com/AJ-EN/aeo-audit.git
 ```
 
-After installing, download the headless browser Playwright needs:
+That's it — on your first scan, `aeo-audit` downloads the headless Chromium it needs automatically (one-time, ~30s). To pre-install it yourself:
 
 ```bash
 playwright install chromium
