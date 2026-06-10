@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEO Audit — PageSpeed for AI Agents</title>
+<meta name="description" content="Scan any website's readiness for AI agents across 5 dimensions. Open-source CLI. The best dev tools score under 33/100 — the agentic web is early.">
+<meta property="og:title" content="AEO Audit — PageSpeed for AI Agents">
+<meta property="og:description" content="I scanned 19 popular dev tools for AI-agent readiness. Even the leaders fail two-thirds of the checks. Scan your own in 10 seconds.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aj-en.github.io/aeo-audit/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --bg: #0a0d12; --panel: #11161d; --panel2: #161c24; --border: #232b36;
+    --text: #e6edf3; --muted: #8b97a7; --accent: #2ee6a6; --accent2: #58a6ff;
+    --A: #2ee6a6; --B: #58a6ff; --C: #f0b429; --D: #f97316; --F: #f4576b;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  .mono { font-family: var(--mono); }
+
+  /* Hero */
+  header { text-align: center; padding: 84px 0 48px; }
+  .badge-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .pill { font-size: 12px; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; font-family: var(--mono); }
+  h1 { font-size: clamp(34px, 6vw, 58px); line-height: 1.05; letter-spacing: -0.02em; font-weight: 800; }
+  h1 .grad { background: linear-gradient(120deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tag { font-size: clamp(16px, 2.4vw, 20px); color: var(--muted); max-width: 640px; margin: 18px auto 0; }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 9px; font-weight: 600; font-size: 15px; border: 1px solid var(--border); color: var(--text); background: var(--panel2); transition: .15s; }
+  .btn:hover { border-color: var(--accent); text-decoration: none; transform: translateY(-1px); }
+  .btn.primary { background: var(--accent); color: #04120c; border-color: var(--accent); }
+  .install { margin: 30px auto 0; max-width: 540px; background: #05080c; border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; font-family: var(--mono); font-size: 14.5px; text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .install code { color: var(--text); }
+  .install .prompt { color: var(--accent); }
+  .copy { cursor: pointer; color: var(--muted); border: 1px solid var(--border); background: var(--panel); border-radius: 6px; padding: 4px 10px; font-size: 12px; font-family: var(--mono); white-space: nowrap; }
+  .copy:hover { color: var(--accent); border-color: var(--accent); }
+
+  .demo { margin: 44px auto 0; max-width: 860px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px -24px rgba(0,0,0,.7); }
+  .demo img { display: block; width: 100%; }
+
+  section { padding: 64px 0; border-top: 1px solid var(--border); }
+  .eyebrow { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
+  h2 { font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.01em; margin: 10px 0 14px; font-weight: 750; }
+  .lead { color: var(--muted); max-width: 680px; font-size: 17px; }
+
+  /* Leaderboard */
+  .lb { margin-top: 30px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--panel); }
+  .lbrow { display: grid; grid-template-columns: 44px 52px 1fr 120px 70px; align-items: center; gap: 12px; padding: 11px 18px; border-top: 1px solid var(--border); font-size: 15px; }
+  .lbrow:first-child { border-top: none; }
+  .lbrow.head { color: var(--muted); font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; background: var(--panel2); }
+  .rank { color: var(--muted); font-family: var(--mono); }
+  .site { font-weight: 600; }
+  .grade { font-family: var(--mono); font-weight: 800; font-size: 15px; text-align: center; border-radius: 6px; padding: 2px 0; }
+  .g-A { color: var(--A); background: rgba(46,230,166,.12); }
+  .g-B { color: var(--B); background: rgba(88,166,255,.12); }
+  .g-C { color: var(--C); background: rgba(240,180,41,.12); }
+  .g-D { color: var(--D); background: rgba(249,115,22,.12); }
+  .g-F { color: var(--F); background: rgba(244,87,107,.12); }
+  .bar { height: 7px; background: var(--panel2); border-radius: 4px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; border-radius: 4px; }
+  .score { font-family: var(--mono); text-align: right; color: var(--muted); }
+  .lbnote { margin-top: 14px; font-size: 13.5px; color: var(--muted); }
+
+  /* Methodology */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-top: 28px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 11px; padding: 18px; }
+  .card h3 { font-size: 16px; display: flex; justify-content: space-between; align-items: baseline; }
+  .card .w { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+  .card p { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
+  .how { margin-top: 30px; display: grid; gap: 16px; }
+  .how .card { padding: 20px 22px; }
+  .how h3 { font-size: 17px; color: var(--text); }
+  .how p { font-size: 15px; }
+
+  .center { text-align: center; }
+  footer { padding: 50px 0 70px; border-top: 1px solid var(--border); color: var(--muted); font-size: 14px; text-align: center; }
+  footer a { color: var(--muted); }
+  @media (max-width: 620px) {
+    .lbrow { grid-template-columns: 32px 46px 1fr 60px; }
+    .lbrow .bar-cell { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="badge-row">
+      <span class="pill">open source</span>
+      <span class="pill">pip install aeo-audit</span>
+      <span class="pill">26 checks · 5 dimensions</span>
+    </div>
+    <h1>PageSpeed for <span class="grad">AI Agents</span></h1>
+    <p class="tag">AI agents are starting to use the web for us. <strong>Can they use your product?</strong> AEO Audit scans any site's agent-readiness and gives you a score, a rank, and an exact fix-list.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/AJ-EN/aeo-audit">★ Star on GitHub</a>
+      <a class="btn" href="https://pypi.org/project/aeo-audit/">View on PyPI</a>
+      <a class="btn" href="#leaderboard">See the leaderboard ↓</a>
+    </div>
+    <div class="install">
+      <code><span class="prompt">$</span> pipx install aeo-audit &amp;&amp; aeo-audit scan https://yoursite.com</code>
+      <button class="copy" onclick="navigator.clipboard.writeText('pipx install aeo-audit && aeo-audit scan https://yoursite.com');this.textContent='copied'">copy</button>
+    </div>
+    <div class="demo">
+      <img src="assets/demo.gif" alt="aeo-audit scanning stripe.com in the terminal">
+    </div>
+  </header>
+
+  <section id="leaderboard">
+    <span class="eyebrow">The Benchmark</span>
+    <h2>19 popular dev tools, ranked by agent-readiness</h2>
+    <p class="lead">The headline isn't who's on top — it's that <strong>nobody is ready yet</strong>. The best-scoring developer tool passes barely a third of the checks. The agentic web is early; this is the starting line.</p>
+    <div class="lb" id="lb"></div>
+    <p class="lbnote">Score = % of 26 weighted checks passed (absolute). Grade = percentile rank <em>within these 19 sites</em> (relative) — the bar rises as the corpus grows. Benchmarked June 2026. <a href="https://github.com/AJ-EN/aeo-audit">Scan your own →</a></p>
+  </section>
+
+  <section id="methodology">
+    <span class="eyebrow">Methodology</span>
+    <h2>What "agent-readiness" actually measures</h2>
+    <p class="lead">Five dimensions, 26 deterministic checks — each looks for a real, verifiable signal (a file, an endpoint, a protocol), never a vibe.</p>
+    <div class="grid">
+      <div class="card"><h3>Discovery <span class="w">25%</span></h3><p>Agent manifest, MCP endpoint, robots, sitemap, DNS, <code>.well-known</code>.</p></div>
+      <div class="card"><h3>Capabilities <span class="w">25%</span></h3><p>OpenAPI, JSON Schema, GraphQL introspection, async webhooks.</p></div>
+      <div class="card"><h3>Trust <span class="w">25%</span></h3><p>Status page, structured errors, health checks, audit logs.</p></div>
+      <div class="card"><h3>Commerce <span class="w">15%</span></h3><p>Agent pricing, Stripe/crypto hints, usage metering.</p></div>
+      <div class="card"><h3>Identity <span class="w">10%</span></h3><p>DID documents, OAuth metadata, wallet hints.</p></div>
+    </div>
+    <div class="how">
+      <div class="card">
+        <h3>The score is the truth. The grade is the rank.</h3>
+        <p>Your <strong>score</strong> (0–100) is absolute and verifiable — it can't move based on anyone else. Your <strong>grade</strong> is your percentile against the benchmark corpus, and it's always labeled as such. We refuse to inflate an "A" or bury everyone in "F" — both are useless. Every report leads with the score and the exact gaps to fix.</p>
+      </div>
+    </div>
+    <p class="center" style="margin-top:28px">
+      <a class="btn" href="example-report.html">📊 See a full example report (linear.app)</a>
+    </p>
+  </section>
+
+  <section class="center">
+    <span class="eyebrow">Try it</span>
+    <h2>Scan your site in 10 seconds</h2>
+    <p class="lead" style="margin:0 auto">Runs locally, open source, no signup. The browser auto-installs on first run.</p>
+    <div class="install" style="margin-top:26px">
+      <code><span class="prompt">$</span> pipx install aeo-audit &amp;&amp; aeo-audit scan https://yoursite.com</code>
+      <button class="copy" onclick="navigator.clipboard.writeText('pipx install aeo-audit && aeo-audit scan https://yoursite.com');this.textContent='copied'">copy</button>
+    </div>
+  </section>
+
+  <footer>
+    Built by <a href="https://github.com/AJ-EN">AJ-EN</a> · <a href="https://github.com/AJ-EN/aeo-audit">GitHub</a> · <a href="https://pypi.org/project/aeo-audit/">PyPI</a> · MIT licensed<br>
+    <span class="mono" style="font-size:12px">AEO = Agent/Engine Optimization</span>
+  </footer>
+
+</div>
+
+<script>
+  const DATA = [[32.6,"A","linear.app"],[31.6,"A","resend.com"],[27.3,"B","clerk.com"],[21.9,"B","upstash.com"],[19.7,"C","temporal.io"],[19.7,"C","planetscale.com"],[19.5,"C","railway.app"],[19.4,"C","replicate.com"],[15.0,"C","tinybird.co"],[15.0,"C","speakeasy.com"],[15.0,"C","neon.tech"],[14.7,"D","render.com"],[12.2,"D","turso.tech"],[12.2,"D","fal.ai"],[10.8,"D","posthog.com"],[9.4,"D","trigger.dev"],[7.5,"D","fly.io"],[6.9,"F","zuplo.com"],[4.7,"F","modal.com"]];
+  const cols = {A:"var(--A)",B:"var(--B)",C:"var(--C)",D:"var(--D)",F:"var(--F)"};
+  const max = 35;
+  let html = '<div class="lbrow head"><span>#</span><span>Grade</span><span>Site</span><span class="bar-cell">Score</span><span class="score">/100</span></div>';
+  DATA.forEach((r,i) => {
+    const [score, grade, site] = r;
+    const pct = Math.max(4, (score/max)*100);
+    html += `<div class="lbrow">
+      <span class="rank">${i+1}</span>
+      <span class="grade g-${grade}">${grade}</span>
+      <span class="site">${site}</span>
+      <span class="bar-cell bar"><span style="width:${pct}%;background:${cols[grade]}"></span></span>
+      <span class="score">${score.toFixed(1)}</span>
+    </div>`;
+  });
+  document.getElementById('lb').innerHTML = html;
+</script>
+</body>
+</html>
