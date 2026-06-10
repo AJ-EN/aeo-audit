@@ -11,6 +11,8 @@ Grades are **relative**: a site is ranked against a benchmark corpus (A = top ti
 
 ![aeo-audit demo: scanning stripe.com](docs/assets/demo.gif)
 
+**🔗 [Live leaderboard, methodology & example report → aj-en.github.io/aeo-audit](https://aj-en.github.io/aeo-audit/)**
+
 ---
 
 ## Architecture Overview
