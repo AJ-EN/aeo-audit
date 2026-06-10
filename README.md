@@ -9,6 +9,8 @@
 
 Grades are **relative**: a site is ranked against a benchmark corpus (A = top tier of agent-readiness today), so the score stays a meaningful, movable target while agent-native standards are still emerging.
 
+![aeo-audit demo: scanning stripe.com](docs/assets/demo.gif)
+
 ---
 
 ## Architecture Overview
