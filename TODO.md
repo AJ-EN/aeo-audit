@@ -125,7 +125,7 @@
 - [x] Soft launch on X (@Ayush_observer) — thread posted
 - [x] Hosted web demo built (`webdemo/`): FastAPI around `ScanEngine`, SSRF guard, rate limit, Dockerfile + fly.toml; verified end-to-end locally
 - [x] Landing page hero now embeds the live scan widget (chips, scorecard, share button; graceful fallback when API is down)
-- [ ] Deploy demo to Fly.io: `fly deploy -c webdemo/fly.toml` from repo root — **user task** (needs Fly account; first build is slow, bakes Chromium)
+- [x] Demo deployed as a free Hugging Face Space (`ayushjangid/aeo-audit-demo`) — Fly.io dropped (needs a card). Redeploy: `HF_TOKEN=… python webdemo/deploy_hf.py`
 - [ ] r/LLMDevs post (use no-link-in-body trick; links in first comment)
 - [ ] Recover HN account (emailed hn@ycombinator.com) -> then Show HN (one-shot, don't burn early)
 - [ ] Write + send outreach emails: trigger.dev (Eric Allam), temporal.io (Maxim Fateev)

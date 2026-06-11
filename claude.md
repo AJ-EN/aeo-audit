@@ -74,7 +74,7 @@ Dimensions where well-run APIs already differ (Trust, Capabilities, Discovery) c
 - **PyPI**: `aeo-audit` **v1.2.1** live — `pip install aeo-audit` / `pipx install aeo-audit`. Verified working from a clean machine (browser auto-installs on first scan).
 - **GitHub**: `https://github.com/AJ-EN/aeo-audit` (owner is **AJ-EN**, not ayushjangid). Repo polished: badges, topics, homepage, demo GIF, CHANGELOG. Releases v1.0.0–v1.2.1 with Linux+macOS binaries attached.
 - **Landing page (GitHub Pages)**: `https://aj-en.github.io/aeo-audit/` — hero now leads with a **live "scan your site" widget** (example chips, animated scorecard, share-on-X button), plus demo GIF, the 19-site leaderboard, methodology, example report, social-preview card (`docs/assets/og-card.jpg`) + favicon. Served from `main` `/docs`.
-- **Hosted web demo** (`webdemo/`, 2026-06-11): FastAPI wrapper around `ScanEngine` — built + verified end-to-end (SSRF guard, 5 scans/hr/IP, concurrency cap 2, CORS locked to `aj-en.github.io`), **NOT yet deployed**. Deploy: `fly deploy -c webdemo/fly.toml` from repo root (user task — needs Fly account). Landing widget points at `https://aeo-audit-demo.fly.dev` (the `DEMO_API` const in `docs/index.html`) and degrades gracefully to a "use the CLI" message until it's live.
+- **Hosted web demo** (`webdemo/`, 2026-06-11): FastAPI wrapper around `ScanEngine` (SSRF guard, 5 scans/hr/IP, concurrency cap 2, CORS locked to `aj-en.github.io`). **Deployed as a free Hugging Face Space** under the user's HF account `ayushjangid` (Fly.io abandoned — user has no card money; HF free tier: 2 vCPU/16GB, no card). Space: `https://huggingface.co/spaces/ayushjangid/aeo-audit-demo`, app URL `https://ayushjangid-aeo-audit-demo.hf.space` (= `DEMO_API` in `docs/index.html`). Redeploy: `HF_TOKEN=… .venv/bin/python webdemo/deploy_hf.py` (installs `aeo-audit` from PyPI — bump the pin in `webdemo/hf/requirements.txt` on engine releases). Free tier sleeps after ~48h idle; first request then takes ~30–60s (widget's loading steps cover it).
 - All 26 checks, 4 reporters, CLI (scan/batch/diff/config/monitor), 206 tests passing, `mypy --strict` + `ruff` clean, coverage ~80%.
 
 ### Launch status (soft launch done 2026-06-10)
@@ -94,8 +94,7 @@ Dimensions where well-run APIs already differ (Trust, Capabilities, Discovery) c
 - Position the user as **a builder in the agentic-web space**, not "the AEO Audit guy" — AEO Audit is chapter one. Bio: `Building open-source tools for the agentic web. Currently: aeo-audit, a scanner for AI-agent readiness.`
 
 ### Next steps
-1. **Deploy the hosted demo** — user task: `fly launch --copy-config --no-deploy -c webdemo/fly.toml` then `fly deploy -c webdemo/fly.toml` from repo root; verify the landing-page scan widget goes live.
-2. Profile polish (bio/website/pin) — user task.
+1. Profile polish (bio/website/pin) — user task.
 3. Draft + send the two outreach emails (now stronger: include the "scan yourself in the browser" link).
 4. Show HN when the account is recovered.
 5. Set up feedback capture (GitHub Discussions / issue template) and iterate the product on real input.

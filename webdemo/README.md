@@ -4,13 +4,20 @@ A zero-install on-ramp to the CLI: paste a URL, get a live scorecard in ~30s.
 It's a thin [FastAPI](https://fastapi.tiangolo.com/) wrapper around the same
 `ScanEngine` the CLI runs, so the demo can never disagree with `aeo-audit scan`.
 
+**Live deployment**: Hugging Face Space at
+<https://huggingface.co/spaces/ayushjangid/aeo-audit-demo>
+(app URL: `https://ayushjangid-aeo-audit-demo.hf.space`) — the landing page's
+scan widget calls it cross-origin.
+
 ```
 webdemo/
 ├── app.py            # FastAPI app: /api/scan + static hosting
 ├── static/index.html # the single-page frontend (matches the landing page)
 ├── requirements.txt  # fastapi + uvicorn (the engine comes from the parent pkg)
 ├── Dockerfile        # python:3.12-slim + Chromium, built from the REPO ROOT
-└── fly.toml          # Fly.io deploy (scales to zero when idle)
+├── fly.toml          # Fly.io deploy config (alternative, paid)
+├── hf/               # Hugging Face Space variant (Dockerfile, README, reqs)
+└── deploy_hf.py      # one-command deploy to the HF Space
 ```
 
 ## Safety rails (it's a public endpoint)
@@ -41,7 +48,22 @@ uvicorn webdemo.app:app --reload --port 8080
 
 Open <http://localhost:8080>.
 
-## Deploy to Fly.io
+## Deploy to Hugging Face Spaces (free, no card — this is what's live)
+
+The Space installs the released `aeo-audit` from PyPI and runs the wrapper in
+`webdemo/` on a free 2 vCPU / 16GB machine. HF runs containers as UID 1000 on
+port 7860 — `webdemo/hf/Dockerfile` handles both.
+
+```bash
+pip install huggingface_hub
+HF_TOKEN=hf_xxx python webdemo/deploy_hf.py   # token: hf.co/settings/tokens (Write)
+```
+
+The free tier sleeps after ~48h without traffic; the first request after that
+takes ~30–60s while the Space wakes. New engine release? Bump the pin in
+`webdemo/hf/requirements.txt` and redeploy.
+
+## Deploy to Fly.io (alternative, needs a card)
 
 One-time:
 

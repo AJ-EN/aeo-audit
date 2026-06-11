@@ -289,8 +289,8 @@
 
 <script>
   // Live scan widget — talks to the hosted demo (same engine as the CLI).
-  // If you deploy under a different Fly app name, update this one constant.
-  const DEMO_API = "https://aeo-audit-demo.fly.dev";
+  // Deployed as a Hugging Face Space; redeploy with webdemo/deploy_hf.py.
+  const DEMO_API = "https://ayushjangid-aeo-audit-demo.hf.space";
 
   const GRADE_COLORS = { A: "var(--A)", B: "var(--B)", C: "var(--C)", D: "var(--D)", F: "var(--F)" };
   const scanForm = document.getElementById("scan");

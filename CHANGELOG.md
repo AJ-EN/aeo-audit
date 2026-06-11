@@ -11,8 +11,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   FastAPI wrapper around the same `ScanEngine` the CLI runs — paste a URL, get
   a live scorecard in ~30s, no install. Ships with an SSRF guard (DNS-resolves
   the target and rejects private/loopback/link-local/metadata addresses),
-  per-IP rate limiting, a global concurrency cap, a Dockerfile with Chromium
-  baked in, and a Fly.io config that scales to zero when idle.
+  per-IP rate limiting, a global concurrency cap, and a Dockerfile with
+  Chromium baked in. Deployed free as a Hugging Face Space
+  (`webdemo/hf/` + `webdemo/deploy_hf.py`); a Fly.io config is included as a
+  paid alternative.
 - The landing page (`docs/index.html`) now embeds a live **"scan your site"
   widget** in the hero — example chips, animated scorecard, top-fixes list, and
   a share-your-score button that states the score plainly. Degrades gracefully

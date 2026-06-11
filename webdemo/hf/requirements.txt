@@ -1,0 +1,5 @@
+# The Space runs the released engine from PyPI; the repo's webdemo/ only
+# contributes the FastAPI wrapper + static UI.
+aeo-audit==1.2.1
+fastapi>=0.110,<1
+uvicorn[standard]>=0.27,<1
