@@ -138,6 +138,29 @@
   .install-line .note { color: var(--muted); font-size: 13px; margin-top: 8px; }
 
   footer { text-align: center; color: var(--muted); font-size: 13px; padding: 48px 0 60px; position: relative; z-index: 1; }
+
+  /* Compare mode */
+  #url2 { display: none; }
+  form.scan.compare #url2 { display: block; }
+  .cmp-head { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; }
+  .cmp-site { text-align: center; }
+  .cmp-site .host { font-family: var(--mono); font-size: 13px; color: var(--muted); word-break: break-all; }
+  .cmp-site .num { font-size: 46px; font-weight: 800; font-family: var(--mono); letter-spacing: -0.03em; line-height: 1.15; }
+  .cmp-site.you .num { color: var(--accent); }
+  .cmp-site.them .num { color: var(--accent2); }
+  .cmp-site .gr { font-family: var(--mono); font-weight: 800; font-size: 14px; border-radius: 6px; padding: 1px 9px; display: inline-block; }
+  .vs { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .cmp-verdict { text-align: center; margin-top: 16px; font-size: 15.5px; font-weight: 600; }
+  .cmp-cats { margin-top: 24px; display: grid; gap: 14px; }
+  .ccat-name { font-size: 13px; color: var(--muted); text-transform: capitalize; margin-bottom: 4px; }
+  .cbar { display: grid; grid-template-columns: 40px 1fr 42px; gap: 8px; align-items: center; margin-top: 3px; }
+  .cbar label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .cbar .track { height: 8px; }
+  .cbar em { font-style: normal; font-family: var(--mono); font-size: 12.5px; text-align: right; }
+  .cbar.you .fill { background: var(--accent); }
+  .cbar.you em { color: var(--accent); }
+  .cbar.them .fill { background: var(--accent2); }
+  .cbar.them em { color: var(--accent2); }
 </style>
 </head>
 <body>
@@ -155,6 +178,7 @@
 
     <form class="scan" id="scanForm">
       <input type="text" id="url" placeholder="yoursite.com" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <input type="text" id="url2" placeholder="competitor.com" autocomplete="off" autocapitalize="off" spellcheck="false" />
       <button type="submit" class="go" id="scanBtn">Scan</button>
     </form>
     <div class="examples">
@@ -162,6 +186,7 @@
       <button type="button" class="chip" data-url="stripe.com">stripe.com</button>
       <button type="button" class="chip" data-url="linear.app">linear.app</button>
       <button type="button" class="chip" data-url="vercel.com">vercel.com</button>
+      <button type="button" class="chip" id="cmpToggle">⚔ vs competitor</button>
     </div>
     <p class="hint">No signup. We don't store your page. Rate-limited — for unlimited scans, install the CLI.</p>
     <p class="err" id="err"></p>
@@ -201,6 +226,36 @@
     </div>
   </div>
 
+  <div class="card" id="cmpCard">
+    <div class="cmp-head">
+      <div class="cmp-site you">
+        <div class="host" id="cAhost"></div>
+        <div class="num" id="cAscore">0</div>
+        <div class="gr" id="cAgrade"></div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="cmp-site them">
+        <div class="host" id="cBhost"></div>
+        <div class="num" id="cBscore">0</div>
+        <div class="gr" id="cBgrade"></div>
+      </div>
+    </div>
+    <div class="cmp-verdict" id="cmpVerdict"></div>
+    <div class="cmp-cats" id="cmpCats"></div>
+    <div id="cmpFixWrap" style="display:none;">
+      <div class="section-title">Your top fixes to close the gap</div>
+      <div class="fixes" id="cmpFixes"></div>
+    </div>
+    <div class="actions">
+      <a class="btn" id="cmpShare" target="_blank" rel="noopener">𝕏 &nbsp;Share this matchup</a>
+      <a class="btn" href="https://github.com/AJ-EN/aeo-audit">★ Star on GitHub</a>
+    </div>
+    <div class="install-line">
+      <code title="Click to copy">pipx install aeo-audit</code>
+      <div class="note">Full reports for both sites — every check, evidence, HTML/PDF export — free &amp; local.</div>
+    </div>
+  </div>
+
   <footer>
     Open-source · <a href="https://github.com/AJ-EN/aeo-audit">GitHub</a> ·
     <a href="https://pypi.org/project/aeo-audit/">PyPI</a> ·
@@ -217,6 +272,12 @@ const errEl = document.getElementById("err");
 const loading = document.getElementById("loading");
 const loadingStep = document.getElementById("loadingStep");
 const card = document.getElementById("card");
+const cmpCard = document.getElementById("cmpCard");
+const urlEl = document.getElementById("url");
+const url2El = document.getElementById("url2");
+let compareMode = false;
+
+function hostOf(u) { try { return new URL(u).hostname; } catch { return u; } }
 
 const STEPS = [
   "Launching a headless browser…",
@@ -305,7 +366,7 @@ function render(d) {
   }
 
   // Pre-filled share post — states the score plainly, no inflation.
-  const host = (() => { try { return new URL(d.url).hostname; } catch { return d.url; } })();
+  const host = hostOf(d.url);
   const text = `${host} scores ${d.overall_score.toFixed(1)}/100 for AI-agent readiness (passes ${d.passed_checks}/${d.total_checks} checks).\n\nScan yours:`;
   document.getElementById("shareBtn").href =
     "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) +
@@ -315,55 +376,174 @@ function render(d) {
   card.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-async function runScan(url) {
+function renderCompare(a, b) {
+  const sites = [
+    { d: a, host: "cAhost", score: "cAscore", grade: "cAgrade" },
+    { d: b, host: "cBhost", score: "cBscore", grade: "cBgrade" },
+  ];
+  sites.forEach((s) => {
+    document.getElementById(s.host).textContent = hostOf(s.d.url);
+    animateCount(document.getElementById(s.score), s.d.overall_score);
+    const g = document.getElementById(s.grade);
+    g.textContent = s.d.grade + " · " + s.d.passed_checks + "/" + s.d.total_checks + " checks";
+    g.style.color = GRADE_COLORS[s.d.grade];
+    g.style.background = "color-mix(in srgb, " + GRADE_COLORS[s.d.grade] + " 14%, transparent)";
+  });
+
+  const diff = a.overall_score - b.overall_score;
+  const verdict = document.getElementById("cmpVerdict");
+  if (diff > 0.05) {
+    verdict.textContent = `${hostOf(a.url)} leads by ${diff.toFixed(1)} points`;
+    verdict.style.color = "var(--accent)";
+  } else if (diff < -0.05) {
+    verdict.textContent = `${hostOf(b.url)} leads by ${(-diff).toFixed(1)} points — here's how to close the gap ↓`;
+    verdict.style.color = "var(--accent2)";
+  } else {
+    verdict.textContent = "Dead even.";
+    verdict.style.color = "var(--muted)";
+  }
+
+  const cats = document.getElementById("cmpCats");
+  cats.innerHTML = "";
+  a.categories.forEach((ca) => {
+    const cb = b.categories.find((c) => c.name === ca.name) || { score: 0 };
+    const row = document.createElement("div");
+    row.innerHTML = `
+      <div class="ccat-name">${ca.name}</div>
+      <div class="cbar you"><label>you</label><div class="track"><div class="fill"></div></div><em>${ca.score.toFixed(0)}</em></div>
+      <div class="cbar them"><label>them</label><div class="track"><div class="fill"></div></div><em>${cb.score.toFixed(0)}</em></div>`;
+    cats.appendChild(row);
+    requestAnimationFrame(() => {
+      row.querySelector(".cbar.you .fill").style.width = ca.score + "%";
+      row.querySelector(".cbar.them .fill").style.width = cb.score + "%";
+    });
+  });
+
+  const wrap = document.getElementById("cmpFixWrap");
+  const fixes = document.getElementById("cmpFixes");
+  fixes.innerHTML = "";
+  const top = a.fixes.slice(0, 4);
+  if (top.length) {
+    wrap.style.display = "block";
+    top.forEach((f) => {
+      const el = document.createElement("div");
+      el.className = "fix";
+      el.innerHTML = `
+        <span class="tag ${f.status}">${f.status}</span>
+        <div class="fix-body">
+          <span class="fix-name">${f.name}</span>
+          <div class="fix-msg">${f.message || "—"}</div>
+        </div>`;
+      fixes.appendChild(el);
+    });
+  } else {
+    wrap.style.display = "none";
+  }
+
+  const text =
+    `${hostOf(a.url)} scores ${a.overall_score.toFixed(1)}/100 vs ` +
+    `${hostOf(b.url)}'s ${b.overall_score.toFixed(1)} on AI-agent readiness.\n\nScan yours:`;
+  document.getElementById("cmpShare").href =
+    "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) +
+    "&url=" + encodeURIComponent(window.location.origin);
+
+  cmpCard.classList.add("show");
+  cmpCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function scanUiStart(label) {
   errEl.textContent = "";
   card.classList.remove("show");
-  if (!url) { errEl.textContent = "Please enter a URL."; return; }
-
+  cmpCard.classList.remove("show");
   btn.disabled = true;
-  btn.textContent = "Scanning…";
+  btn.textContent = label;
   loading.classList.add("show");
   cycleSteps();
+}
 
+function scanUiEnd() {
+  clearInterval(stepTimer);
+  loading.classList.remove("show");
+  btn.disabled = false;
+  btn.textContent = compareMode ? "Compare" : "Scan";
+}
+
+async function scanOne(url) {
+  const res = await fetch("/api/scan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ url }),
+  });
+  const data = await res.json();
+  if (!res.ok) return { err: data.error || "Something went wrong." };
+  return { data };
+}
+
+async function runScan(url) {
+  if (!url) { errEl.textContent = "Please enter a URL."; return; }
+  scanUiStart("Scanning…");
   try {
-    const res = await fetch("/api/scan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      errEl.textContent = data.error || "Something went wrong.";
-    } else {
-      render(data);
-    }
+    const r = await scanOne(url);
+    if (r.data) render(r.data);
+    else errEl.textContent = r.err;
   } catch (_) {
     errEl.textContent = "Network error — please try again.";
   } finally {
-    clearInterval(stepTimer);
-    loading.classList.remove("show");
-    btn.disabled = false;
-    btn.textContent = "Scan";
+    scanUiEnd();
+  }
+}
+
+async function runCompare(a, b) {
+  if (!a || !b) { errEl.textContent = "Enter both URLs to compare."; return; }
+  scanUiStart("Scanning both…");
+  try {
+    const [ra, rb] = await Promise.all([scanOne(a), scanOne(b)]);
+    if (ra.data && rb.data) renderCompare(ra.data, rb.data);
+    else if (ra.data) { render(ra.data); errEl.textContent = "Competitor scan failed: " + (rb.err || "unknown error"); }
+    else if (rb.data) { render(rb.data); errEl.textContent = "First scan failed: " + (ra.err || "unknown error"); }
+    else errEl.textContent = ra.err || "Both scans failed.";
+  } catch (_) {
+    errEl.textContent = "Network error — please try again.";
+  } finally {
+    scanUiEnd();
   }
 }
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
-  runScan(document.getElementById("url").value.trim());
+  if (compareMode) runCompare(urlEl.value.trim(), url2El.value.trim());
+  else runScan(urlEl.value.trim());
 });
 
-document.querySelectorAll(".chip").forEach((chip) => {
+document.getElementById("cmpToggle").addEventListener("click", function () {
+  compareMode = !compareMode;
+  form.classList.toggle("compare", compareMode);
+  this.textContent = compareMode ? "✕ single scan" : "⚔ vs competitor";
+  btn.textContent = compareMode ? "Compare" : "Scan";
+  if (compareMode) (urlEl.value.trim() ? url2El : urlEl).focus();
+});
+
+document.querySelectorAll(".chip[data-url]").forEach((chip) => {
   chip.addEventListener("click", () => {
-    document.getElementById("url").value = chip.dataset.url;
-    runScan(chip.dataset.url);
+    if (compareMode) {
+      // Fill the empty slot; run when both sides are set.
+      if (!urlEl.value.trim()) { urlEl.value = chip.dataset.url; url2El.focus(); return; }
+      url2El.value = chip.dataset.url;
+      runCompare(urlEl.value.trim(), url2El.value.trim());
+    } else {
+      urlEl.value = chip.dataset.url;
+      runScan(chip.dataset.url);
+    }
   });
 });
 
-document.getElementById("ctaCmd").addEventListener("click", function () {
-  navigator.clipboard.writeText("pipx install aeo-audit");
-  const old = this.textContent;
-  this.textContent = "copied ✓";
-  setTimeout(() => { this.textContent = old; }, 1200);
+document.querySelectorAll(".install-line code").forEach((el) => {
+  el.addEventListener("click", function () {
+    navigator.clipboard.writeText("pipx install aeo-audit");
+    const old = this.textContent;
+    this.textContent = "copied ✓";
+    setTimeout(() => { this.textContent = old; }, 1200);
+  });
 });
 </script>
 </body>

@@ -111,6 +111,29 @@
   .fix-msg { color: var(--muted); font-size: 12.5px; }
   .scanactions { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
+  /* Compare mode */
+  #scanUrl2 { display: none; }
+  .scanform.compare #scanUrl2 { display: block; }
+  .cmp-head { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; }
+  .cmp-site { text-align: center; }
+  .cmp-site .host { font-family: var(--mono); font-size: 13px; color: var(--muted); word-break: break-all; }
+  .cmp-site .num { font-size: 42px; font-weight: 800; font-family: var(--mono); letter-spacing: -0.03em; line-height: 1.15; }
+  .cmp-site.you .num { color: var(--accent); }
+  .cmp-site.them .num { color: var(--accent2); }
+  .cmp-site .gr { font-family: var(--mono); font-weight: 800; font-size: 13px; border-radius: 6px; padding: 1px 9px; display: inline-block; }
+  .vs { color: var(--muted); font-family: var(--mono); font-size: 13px; }
+  .cmp-verdict { text-align: center; margin-top: 14px; font-size: 15px; font-weight: 600; }
+  .cmp-cats { margin-top: 22px; display: grid; gap: 13px; }
+  .ccat-name { font-size: 13px; color: var(--muted); text-transform: capitalize; margin-bottom: 3px; }
+  .cbar { display: grid; grid-template-columns: 38px 1fr 40px; gap: 8px; align-items: center; margin-top: 3px; }
+  .cbar label { font-size: 10px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .cbar .track { height: 7px; }
+  .cbar em { font-style: normal; font-family: var(--mono); font-size: 12px; text-align: right; }
+  .cbar.you .fill { background: var(--accent); }
+  .cbar.you em { color: var(--accent); }
+  .cbar.them .fill { background: var(--accent2); }
+  .cbar.them em { color: var(--accent2); }
+
   .demo { margin: 44px auto 0; max-width: 860px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px -24px rgba(0,0,0,.7); }
   .demo img { display: block; width: 100%; }
 
@@ -171,6 +194,7 @@
 
     <form class="scanform" id="scan">
       <input type="text" id="scanUrl" placeholder="yoursite.com" autocomplete="off" spellcheck="false" />
+      <input type="text" id="scanUrl2" placeholder="competitor.com" autocomplete="off" spellcheck="false" />
       <button type="submit" id="scanBtn">Scan free</button>
     </form>
     <div class="examples">
@@ -178,6 +202,7 @@
       <button type="button" class="chip" data-url="stripe.com">stripe.com</button>
       <button type="button" class="chip" data-url="linear.app">linear.app</button>
       <button type="button" class="chip" data-url="vercel.com">vercel.com</button>
+      <button type="button" class="chip" id="cmpToggle">⚔ vs competitor</button>
     </div>
     <p class="scanhint">Live scan, ~30s. No signup, nothing stored. Rate-limited — the CLI below is unlimited.</p>
     <p class="scanerr" id="scanErr"></p>
@@ -203,6 +228,32 @@
       </div>
       <div class="scanactions">
         <a class="btn" id="scanShare" target="_blank" rel="noopener">𝕏 &nbsp;Share your score</a>
+        <a class="btn" href="https://github.com/AJ-EN/aeo-audit">★ Star on GitHub</a>
+      </div>
+    </div>
+
+    <div class="scancard" id="cmpCard">
+      <div class="cmp-head">
+        <div class="cmp-site you">
+          <div class="host" id="cAhost"></div>
+          <div class="num" id="cAscore">0</div>
+          <div class="gr" id="cAgrade"></div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="cmp-site them">
+          <div class="host" id="cBhost"></div>
+          <div class="num" id="cBscore">0</div>
+          <div class="gr" id="cBgrade"></div>
+        </div>
+      </div>
+      <div class="cmp-verdict" id="cmpVerdict"></div>
+      <div class="cmp-cats" id="cmpCats"></div>
+      <div id="cmpFixWrap" style="display:none;">
+        <div class="fixtitle">Your top fixes to close the gap</div>
+        <div class="fixes" id="cmpFixes"></div>
+      </div>
+      <div class="scanactions">
+        <a class="btn" id="cmpShare" target="_blank" rel="noopener">𝕏 &nbsp;Share this matchup</a>
         <a class="btn" href="https://github.com/AJ-EN/aeo-audit">★ Star on GitHub</a>
       </div>
     </div>
@@ -299,6 +350,12 @@
   const scanLoad = document.getElementById("scanLoad");
   const scanStep = document.getElementById("scanStep");
   const scanCard = document.getElementById("scanCard");
+  const cmpCard = document.getElementById("cmpCard");
+  const scanUrlEl = document.getElementById("scanUrl");
+  const scanUrl2El = document.getElementById("scanUrl2");
+  let compareMode = false;
+
+  function hostOf(u) { try { return new URL(u).hostname; } catch { return u; } }
 
   const SCAN_STEPS = [
     "Launching a headless browser…",
@@ -389,43 +446,164 @@
     scanCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  async function runScan(url) {
+  function renderCompare(a, b) {
+    [
+      { d: a, host: "cAhost", score: "cAscore", grade: "cAgrade" },
+      { d: b, host: "cBhost", score: "cBscore", grade: "cBgrade" },
+    ].forEach((s) => {
+      document.getElementById(s.host).textContent = hostOf(s.d.url);
+      countUp(document.getElementById(s.score), s.d.overall_score);
+      const g = document.getElementById(s.grade);
+      g.textContent = s.d.grade + " · " + s.d.passed_checks + "/" + s.d.total_checks + " checks";
+      g.style.color = GRADE_COLORS[s.d.grade];
+      g.style.background = "color-mix(in srgb, " + GRADE_COLORS[s.d.grade] + " 14%, transparent)";
+    });
+
+    const diff = a.overall_score - b.overall_score;
+    const verdict = document.getElementById("cmpVerdict");
+    if (diff > 0.05) {
+      verdict.textContent = `${hostOf(a.url)} leads by ${diff.toFixed(1)} points`;
+      verdict.style.color = "var(--accent)";
+    } else if (diff < -0.05) {
+      verdict.textContent = `${hostOf(b.url)} leads by ${(-diff).toFixed(1)} points — here's how to close the gap ↓`;
+      verdict.style.color = "var(--accent2)";
+    } else {
+      verdict.textContent = "Dead even.";
+      verdict.style.color = "var(--muted)";
+    }
+
+    const cats = document.getElementById("cmpCats");
+    cats.innerHTML = "";
+    a.categories.forEach((ca) => {
+      const cb = b.categories.find((c) => c.name === ca.name) || { score: 0 };
+      const row = document.createElement("div");
+      row.innerHTML = `
+        <div class="ccat-name">${ca.name}</div>
+        <div class="cbar you"><label>you</label><div class="track"><div class="fill"></div></div><em>${ca.score.toFixed(0)}</em></div>
+        <div class="cbar them"><label>them</label><div class="track"><div class="fill"></div></div><em>${cb.score.toFixed(0)}</em></div>`;
+      cats.appendChild(row);
+      requestAnimationFrame(() => {
+        row.querySelector(".cbar.you .fill").style.width = ca.score + "%";
+        row.querySelector(".cbar.them .fill").style.width = cb.score + "%";
+      });
+    });
+
+    const wrap = document.getElementById("cmpFixWrap");
+    const fixes = document.getElementById("cmpFixes");
+    fixes.innerHTML = "";
+    const top = a.fixes.slice(0, 4);
+    if (top.length) {
+      wrap.style.display = "block";
+      top.forEach((f) => {
+        const el = document.createElement("div");
+        el.className = "fix";
+        el.innerHTML = `
+          <span class="ftag ${f.status}">${f.status}</span>
+          <div>
+            <span class="fix-name">${f.name}</span>
+            <div class="fix-msg">${f.message || "—"}</div>
+          </div>`;
+        fixes.appendChild(el);
+      });
+    } else {
+      wrap.style.display = "none";
+    }
+
+    const text =
+      `${hostOf(a.url)} scores ${a.overall_score.toFixed(1)}/100 vs ` +
+      `${hostOf(b.url)}'s ${b.overall_score.toFixed(1)} on AI-agent readiness.\n\nScan yours:`;
+    document.getElementById("cmpShare").href =
+      "https://twitter.com/intent/tweet?text=" + encodeURIComponent(text) +
+      "&url=" + encodeURIComponent("https://aj-en.github.io/aeo-audit/");
+
+    cmpCard.classList.add("show");
+    cmpCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function scanUiStart(label) {
     scanErr.textContent = "";
     scanCard.classList.remove("show");
-    if (!url) { scanErr.textContent = "Please enter a URL."; return; }
-
+    cmpCard.classList.remove("show");
     scanBtn.disabled = true;
-    scanBtn.textContent = "Scanning…";
+    scanBtn.textContent = label;
     scanLoad.classList.add("show");
     startSteps();
+  }
 
+  function scanUiEnd() {
+    clearInterval(scanTimer);
+    scanLoad.classList.remove("show");
+    scanBtn.disabled = false;
+    scanBtn.textContent = compareMode ? "Compare" : "Scan free";
+  }
+
+  const OFFLINE_MSG = "The live demo is unreachable right now — the CLI below works offline: pipx install aeo-audit";
+
+  async function scanOne(url) {
+    const res = await fetch(DEMO_API + "/api/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { err: data.error || "Something went wrong." };
+    return { data };
+  }
+
+  async function runScan(url) {
+    if (!url) { scanErr.textContent = "Please enter a URL."; return; }
+    scanUiStart("Scanning…");
     try {
-      const res = await fetch(DEMO_API + "/api/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-      const data = await res.json();
-      if (!res.ok) scanErr.textContent = data.error || "Something went wrong.";
-      else renderScan(data);
+      const r = await scanOne(url);
+      if (r.data) renderScan(r.data);
+      else scanErr.textContent = r.err;
     } catch (_) {
-      scanErr.textContent = "The live demo is unreachable right now — the CLI below works offline: pipx install aeo-audit";
+      scanErr.textContent = OFFLINE_MSG;
     } finally {
-      clearInterval(scanTimer);
-      scanLoad.classList.remove("show");
-      scanBtn.disabled = false;
-      scanBtn.textContent = "Scan free";
+      scanUiEnd();
+    }
+  }
+
+  async function runCompare(a, b) {
+    if (!a || !b) { scanErr.textContent = "Enter both URLs to compare."; return; }
+    scanUiStart("Scanning both…");
+    try {
+      const [ra, rb] = await Promise.all([scanOne(a), scanOne(b)]);
+      if (ra.data && rb.data) renderCompare(ra.data, rb.data);
+      else if (ra.data) { renderScan(ra.data); scanErr.textContent = "Competitor scan failed: " + (rb.err || "unknown error"); }
+      else if (rb.data) { renderScan(rb.data); scanErr.textContent = "First scan failed: " + (ra.err || "unknown error"); }
+      else scanErr.textContent = ra.err || "Both scans failed.";
+    } catch (_) {
+      scanErr.textContent = OFFLINE_MSG;
+    } finally {
+      scanUiEnd();
     }
   }
 
   scanForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    runScan(document.getElementById("scanUrl").value.trim());
+    if (compareMode) runCompare(scanUrlEl.value.trim(), scanUrl2El.value.trim());
+    else runScan(scanUrlEl.value.trim());
   });
-  document.querySelectorAll(".chip").forEach((chip) => {
+
+  document.getElementById("cmpToggle").addEventListener("click", function () {
+    compareMode = !compareMode;
+    scanForm.classList.toggle("compare", compareMode);
+    this.textContent = compareMode ? "✕ single scan" : "⚔ vs competitor";
+    scanBtn.textContent = compareMode ? "Compare" : "Scan free";
+    if (compareMode) (scanUrlEl.value.trim() ? scanUrl2El : scanUrlEl).focus();
+  });
+
+  document.querySelectorAll(".chip[data-url]").forEach((chip) => {
     chip.addEventListener("click", () => {
-      document.getElementById("scanUrl").value = chip.dataset.url;
-      runScan(chip.dataset.url);
+      if (compareMode) {
+        if (!scanUrlEl.value.trim()) { scanUrlEl.value = chip.dataset.url; scanUrl2El.focus(); return; }
+        scanUrl2El.value = chip.dataset.url;
+        runCompare(scanUrlEl.value.trim(), scanUrl2El.value.trim());
+      } else {
+        scanUrlEl.value = chip.dataset.url;
+        runScan(chip.dataset.url);
+      }
     });
   });
 </script>
