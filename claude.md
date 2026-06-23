@@ -80,7 +80,7 @@ Dimensions where well-run APIs already differ (Trust, Capabilities, Discovery) c
 ### Launch status (soft launch done 2026-06-10)
 - **X**: launch thread posted from **@Ayush_observer** (12 followers — small account). Live.
 - **Reddit**: r/SideProject post was auto-removed by spam filter (low karma). r/LLMDevs not yet posted — must use the **no-link-in-body trick** (links go in the first comment) to survive the filter.
-- **Hacker News**: account (since 2021) is locked; recovery emailed to hn@ycombinator.com. **Show HN deferred** until it's back — it's one-shot per URL, don't burn it on a new/shaky account.
+- **Hacker News**: account `__ayush__` (since 2021, double underscores both sides — earlier "locked" was just a username typo, never actually locked). Low-karma/dormant. **Show HN posted 2026-06-13 (Tue ~6:15pm IST) and auto-flagged within ~1 min** — classic low-karma-account-drops-self-promo-link filter, not a content judgment. Emailed hn@ycombinator.com to request unflag / second-chance pool. Next time: build karma first (thoughtful comments) before submitting links.
 - **Outreach emails** to trigger.dev (Eric Allam) / temporal.io (Maxim Fateev): drafted-in-conversation but **not yet written/sent**. Highest-value remaining channel (no gatekeeper).
 
 ### CRITICAL gotchas for a new session (saves re-deriving)
